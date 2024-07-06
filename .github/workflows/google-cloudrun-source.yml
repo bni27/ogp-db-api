@@ -51,9 +51,9 @@ on:
     branches: [ "main" ]
 
 env:
-  PROJECT_ID: YOUR_PROJECT_ID # TODO: update Google Cloud project id
-  SERVICE: YOUR_SERVICE_NAME # TODO: update Cloud Run service name
-  REGION: YOUR_SERVICE_REGION # TODO: update Cloud Run service region
+  PROJECT_ID: full-database-417320 # Google Cloud project id
+  SERVICE: ogp-db-api # Cloud Run service name
+  REGION: europe-west2 # Cloud Run service region
 
 jobs:
   deploy:
@@ -70,7 +70,7 @@ jobs:
       # NOTE: Alternative option - authentication via credentials json
       - name: Google Auth
         id: auth
-        uses: 'google-github-actions/auth@v0'
+        uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
 
