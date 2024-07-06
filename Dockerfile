@@ -6,6 +6,4 @@ RUN pip install pipenv
 RUN pipenv install --system --deploy
 COPY run.sh /app/
 COPY main.py /app/
-EXPOSE ${PORT}
-ENTRYPOINT [ "python" ]
-CMD ["main.py"]
+CMD ["python", "main.py"]
