@@ -33,4 +33,5 @@ def select_data(table_name: str, schema_name: str = "raw") -> DataFrame:
         a = connection.execute(
             sqlalchemy.text(f'SELECT * FROM "{schema_name}"."{table_name}"')
         )
-    return DataFrame(a.all(), columns=a.keys()).to_dict()
+    cols = [i for i in a.keys()]
+    return [{c: r for r, c in zip(row, cols)} for row in a.all()]
