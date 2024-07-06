@@ -1,2 +1,2 @@
 #!/bin/bash
-fastapi dev main.py
+fastapi dev main.py --port ${PORT}
