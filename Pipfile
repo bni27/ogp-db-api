@@ -8,6 +8,7 @@ sqlalchemy = "*"
 pandas = "*"
 fastapi = "*"
 uvicorn = "*"
+cloud-sql-python-connector = {extras = ["pg8000"], version = "*"}
 
 [dev-packages]
 
