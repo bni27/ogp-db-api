@@ -5,4 +5,5 @@ RUN python -m pip install --upgrade pip
 RUN pip install pipenv
 RUN pipenv install --system --deploy
 COPY main.py /app/
+COPY db_sql.py /app/
 CMD ["python", "main.py"]
