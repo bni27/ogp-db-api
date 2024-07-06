@@ -6,5 +6,5 @@ RUN pip install pipenv
 RUN pipenv install --system --deploy
 COPY run.sh /app/
 COPY main.py /app/
-EXPOSE 8000
+EXPOSE ${PORT}
 CMD ["./run.sh"]
