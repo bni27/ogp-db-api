@@ -30,5 +30,7 @@ def select_data(table_name: str, schema_name: str = "raw") -> DataFrame:
         creator=getconn,
     )
     with pool.connect() as connection:
-        a = connection.execute(f'SELECT * FROM "{schema_name}"."{table_name}"')
+        a = connection.execute(
+            sqlalchemy.text(f'SELECT * FROM "{schema_name}"."{table_name}"')
+        )
     return DataFrame(a.all(), columns=a.keys()).to_dict()
