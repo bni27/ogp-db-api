@@ -44,4 +44,4 @@ def union_prod():
     )
     m = MetaData(schema="stage")
     m.reflect(pool)
-    return [table for table in m.tables.values()]
+    return [table.name for table in m.tables.values()]
