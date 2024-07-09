@@ -2,7 +2,7 @@ import os
 from fastapi import FastAPI
 import uvicorn
 
-from db_sql import select_data
+from db_sql import select_data, union_prod
 
 app = FastAPI()
 
@@ -13,8 +13,16 @@ async def root():
 
 
 @app.get("/data")
-async def data():
-    return select_data("aerospace")
+async def data(asset_class: str | None = None):
+    return select_data(asset_class)
+
+@app.post("/update")
+async def update():
+    # load new raw datasets
+    # process them to stage
+    # union them to prod table
+    return union_prod()
+
 
 
 if __name__ == "__main__":

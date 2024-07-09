@@ -2,7 +2,7 @@ import os
 
 from google.cloud.sql.connector import Connector
 from pandas import DataFrame
-import sqlalchemy
+from sqlalchemy import create_engine, MetaData, text
 
 EXCHANGE_RATE_URI = "PA.NUS.FCRF"
 DB_USER = os.environ.get("DB_USER", "postgres")
@@ -25,13 +25,23 @@ def getconn():
 
 
 def select_data(table_name: str, schema_name: str = "raw") -> DataFrame:
-    pool = sqlalchemy.create_engine(
+    pool = create_engine(
         "postgresql+pg8000://",
         creator=getconn,
     )
     with pool.connect() as connection:
         a = connection.execute(
-            sqlalchemy.text(f'SELECT * FROM "{schema_name}"."{table_name}"')
+            text(f'SELECT * FROM "{schema_name}"."{table_name}"')
         )
     cols = [i for i in a.keys()]
     return [{c: r for r, c in zip(row, cols)} for row in a.all()]
+
+
+def union_prod():
+    pool = create_engine(
+        "postgresql+pg8000://",
+        creator=getconn,
+    )
+    m = MetaData(schema="stage")
+    m.reflect(pool)
+    return [table for table in m.tables.values()]
