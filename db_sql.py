@@ -24,7 +24,7 @@ def getconn():
     return conn
 
 
-def select_data(table_name: str, schema_name: str = "raw") -> DataFrame:
+def select_data(table_name: str, schema_name: str = "prod") -> list[dict]:
     pool = create_engine(
         "postgresql+pg8000://",
         creator=getconn,
@@ -44,4 +44,10 @@ def union_prod():
     )
     m = MetaData(schema="stage")
     m.reflect(pool)
-    return [table.name for table in m.tables.values()]
+    columns = []
+    for table in m.tables.values():
+        for column in table.c:
+            if column not in columns:
+                columns.append(column.name)
+    
+    return columns
