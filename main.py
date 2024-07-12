@@ -1,30 +1,40 @@
 import os
-from fastapi import FastAPI
+
+from fastapi import Depends, FastAPI, status
+from fastapi.responses import JSONResponse
 import uvicorn
 
-from db_sql import select_data, union_prod
+from app.auth import validate_api_key
+from app.db import connector
+from app.routers import auth, data
 
 app = FastAPI()
 
+app.include_router(
+    auth.router,
+    prefix="/api/v1/auth",
+    dependencies=[Depends(validate_api_key)]
+)
 
-@app.get("/")
+app.include_router(
+    data.router,
+    prefix="/api/v1/data",
+    dependencies=[Depends(validate_api_key)]
+)
+
+
+@app.get("/health", status_code=status.HTTP_204_NO_CONTENT)
 async def root():
-    return {"message": "Hello World"}
-
-
-@app.get("/data")
-async def data(asset_class: str | None = None):
-    return select_data(asset_class)
-
-
-@app.post("/update")
-async def update():
-    # load new raw datasets
-    # process them to stage
-    # union them to prod table
-    return union_prod()
+    try:
+        c = connector.connect()
+        c.close()
+    except Exception:
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"health": "Cannot connect to DB"}
+        )
+    return
 
 
 if __name__ == "__main__":
-    port = os.environ.get("PORT", 8080)
-    uvicorn.run(app, port=port, host="0.0.0.0")
+    uvicorn.run(app, port=os.environ.get("PORT", 80), host="0.0.0.0")

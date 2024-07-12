@@ -1,9 +1,9 @@
 FROM python:3.11-slim
-WORKDIR /app
-COPY Pipfile Pipfile.lock /app/
+WORKDIR /code
+COPY Pipfile Pipfile.lock /code/
 RUN python -m pip install --upgrade pip
 RUN pip install pipenv
 RUN pipenv install --system --deploy
-COPY main.py /app/
-COPY db_sql.py /app/
+COPY ./main.py /code/
+COPY ./app /code/app
 CMD ["python", "main.py"]
