@@ -28,7 +28,8 @@ async def root():
     try:
         c = connector().connect()
         c.close()
-    except Exception:
+    except Exception as e:
+        print(e)
         return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             content={"health": "Cannot connect to DB"}
