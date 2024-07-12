@@ -26,7 +26,7 @@ app.include_router(
 @app.get("/health", status_code=status.HTTP_204_NO_CONTENT)
 async def root():
     try:
-        c = connector.connect()
+        c = connector().connect()
         c.close()
     except Exception:
         return JSONResponse(

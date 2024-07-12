@@ -25,7 +25,7 @@ def connector():
 
 
 def select_data(table_name: str, schema_name: str = "prod") -> list[dict]:
-    with connector.connect() as connection:
+    with connector().connect() as connection:
         a = connection.execute(
             text(f'SELECT * FROM "{schema_name}"."{table_name}"')
         )
