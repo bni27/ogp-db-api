@@ -17,7 +17,7 @@ class APIGenRequest(BaseModel):
     exp_date: str
 
 
-@router.get("/")
+@router.post("/")
 async def generate_key(
     gen_req: APIGenRequest, api_key: User = Depends(validate_api_key)
 ):
