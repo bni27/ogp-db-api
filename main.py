@@ -37,4 +37,4 @@ async def root():
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, port=os.environ.get("PORT", 80), host="0.0.0.0")
+    uvicorn.run(app, port=os.environ.get("PORT", 8080), host="0.0.0.0")
