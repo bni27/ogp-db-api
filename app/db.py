@@ -8,24 +8,29 @@ DB_PASS = os.environ.get("DB_PASS")
 DB_NAME = os.environ.get("DB_NAME")
 INSTANCE_CONNECTION_NAME = os.environ.get("INSTANCE_CONNECTION_NAME")
 
+connector = Connector()
 
-def connector():
-    conn = Connector()
-    pool = create_engine(
-        "postgresql+pg8000://",
-        creator=conn.connect(
-            INSTANCE_CONNECTION_NAME,
-            "pg8000",
-            user=DB_USER,
-            password=DB_PASS,
-            db=DB_NAME,
-        ),
+
+def get_conn():
+    conn = connector.connect(
+        INSTANCE_CONNECTION_NAME,
+        "pg8000",
+        user=DB_USER,
+        password=DB_PASS,
+        db=DB_NAME,
     )
-    return pool
+    return conn
+
+
+def get_pool():
+    return create_engine(
+        "postgresql+pg8000://",
+        creator=get_conn,
+    )
 
 
 def select_data(table_name: str, schema_name: str = "prod") -> list[dict]:
-    with connector().connect() as connection:
+    with get_pool().connect() as connection:
         a = connection.execute(
             text(f'SELECT * FROM "{schema_name}"."{table_name}"')
         )
@@ -35,7 +40,7 @@ def select_data(table_name: str, schema_name: str = "prod") -> list[dict]:
 
 def union_prod():
     m = MetaData(schema="stage")
-    m.reflect(connector())
+    m.reflect(get_pool())
     columns = []
     for table in m.tables.values():
         for column in table.c:
