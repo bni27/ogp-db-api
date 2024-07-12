@@ -49,6 +49,6 @@ def validate_api_key(api_key_header: str = Security(api_key_header)) -> User:
     if user.exp_date < time():
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="API key expired. Contact your administrator for access."
+            detail="API key expired. Contact your administrator for access.",
         )
     return user

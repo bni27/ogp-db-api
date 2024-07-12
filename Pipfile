@@ -10,6 +10,7 @@ fastapi = "*"
 uvicorn = "*"
 cloud-sql-python-connector = {extras = ["pg8000"], version = "*"}
 pycryptodome = "*"
+python-multipart = "*"
 
 [dev-packages]
 

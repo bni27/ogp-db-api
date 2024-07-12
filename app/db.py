@@ -31,9 +31,7 @@ def get_pool():
 
 def select_data(table_name: str, schema_name: str = "prod") -> list[dict]:
     with get_pool().connect() as connection:
-        a = connection.execute(
-            text(f'SELECT * FROM "{schema_name}"."{table_name}"')
-        )
+        a = connection.execute(text(f'SELECT * FROM "{schema_name}"."{table_name}"'))
     cols = [i for i in a.keys()]
     return [{c: r for r, c in zip(row, cols)} for row in a.all()]
 
@@ -46,5 +44,4 @@ def union_prod():
         for column in table.c:
             if column not in columns:
                 columns.append(column.name)
-
     return columns

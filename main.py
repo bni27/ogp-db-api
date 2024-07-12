@@ -11,15 +11,11 @@ from app.routers import auth, data
 app = FastAPI()
 
 app.include_router(
-    auth.router,
-    prefix="/api/v1/auth",
-    dependencies=[Depends(validate_api_key)]
+    auth.router, prefix="/api/v1/auth", dependencies=[Depends(validate_api_key)]
 )
 
 app.include_router(
-    data.router,
-    prefix="/api/v1/data",
-    dependencies=[Depends(validate_api_key)]
+    data.router, prefix="/api/v1/data", dependencies=[Depends(validate_api_key)]
 )
 
 
@@ -32,7 +28,7 @@ async def root():
         print(e)
         return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            content={"health": "Cannot connect to DB"}
+            content={"health": "Cannot connect to DB"},
         )
     return
 
