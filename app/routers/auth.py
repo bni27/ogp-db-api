@@ -16,7 +16,7 @@ router = APIRouter()
 
 class APIGenRequest(BaseModel):
     name: str
-    auth_level: str
+    auth_level: AuthLevel
     exp_date: str
 
 

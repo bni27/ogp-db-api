@@ -16,9 +16,9 @@ async def data(asset_class: str | None = None):
 @router.post("/uploadFile")
 def upload_file(
     file: UploadFile = File(),
-    bucket_mount: str = "/data",
     api_key: User = Depends(validate_api_key),
 ):
+    bucket_mount: str = "/data"
     if api_key.auth_level != AuthLevel.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -38,11 +38,6 @@ def upload_file(
 
 @router.post("/update", status_code=status.HTTP_204_NO_CONTENT)
 async def update(api_key: User = Depends(validate_api_key)):
-    if api_key.auth_level != AuthLevel.ADMIN:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You lack sufficient privileges for this action.",
-        )
     # load new raw datasets
     # process them to stage
     # union them to prod table

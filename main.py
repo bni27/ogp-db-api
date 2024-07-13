@@ -8,7 +8,14 @@ from app.auth import validate_api_key
 from app.db import get_pool
 from app.routers import auth, data
 
-app = FastAPI()
+app = FastAPI(
+    title="Oxford Global Projects MegaProjects Data",
+    version="0.2.0",
+    contact={
+        "name": "Ian Bakst",
+        "email": "ian.bakst@oxfordglobalprojects.com",
+    }
+)
 
 app.include_router(
     auth.router, prefix="/api/v1/auth", dependencies=[Depends(validate_api_key)]

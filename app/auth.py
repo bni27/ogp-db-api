@@ -25,11 +25,11 @@ def decode_api_key(api_key: str) -> dict[str, str | int]:
     return json.loads(_details)
 
 
-def generate_api_key(name: str, auth_level: str, exp_date: int) -> str:
+def generate_api_key(name: str, auth_level: AuthLevel, exp_date: int) -> str:
     user = User.model_validate(
         {
             "name": name,
-            "auth_level": AuthLevel(auth_level.lower()),
+            "auth_level": auth_level,
             "exp_date": exp_date,
         }
     )
