@@ -2,12 +2,15 @@ import os
 from pathlib import Path
 
 from google.cloud.sql.connector import Connector
+import psycopg2
 from sqlalchemy import create_engine, MetaData, text
+
 
 DB_USER = os.environ.get("DB_USER")
 DB_PASS = os.environ.get("DB_PASS")
 DB_NAME = os.environ.get("DB_NAME")
 INSTANCE_CONNECTION_NAME = os.environ.get("INSTANCE_CONNECTION_NAME")
+DB_IP = os.environ.get("DB_IP")
 
 connector = Connector()
 
@@ -66,14 +69,16 @@ def create_table_from_headers(headers: list[str], table_name: str, schema: str =
 
 
 def load_data_into_table(file_path: Path):
-    table_name = file_path.name.split('.')[0]
-    with open(file_path, 'r') as f:
+    table_name = file_path.name.split(".")[0]
+    with open(file_path, "r") as f:
         header_line = f.readline()
-        headers = header_line.split(',')
+        headers = header_line.split(",")
         create_table_from_headers(headers, table_name)
-        conn = get_pool().raw_connection()
+        conn = psycopg2.connect(
+            dbname=DB_NAME, host=DB_IP, port=5432, user=DB_USER, password=DB_PASS
+        )
         cursor = conn.cursor()
-        cmd = f'COPY {table_name}({headers}) FROM STDIN WITH (FORMAT CSV, HEADER FALSE)'
+        cmd = f"COPY {table_name}({headers}) FROM STDIN WITH (FORMAT CSV, HEADER FALSE)"
         cursor.copy_expert(cmd, f)
         conn.commit()
 

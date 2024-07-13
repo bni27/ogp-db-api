@@ -158,3 +158,6 @@ cython_debug/
 .idea/
 
 .env
+
+data/
+!data/.keep
