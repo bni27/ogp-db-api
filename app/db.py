@@ -81,7 +81,7 @@ def load_data_into_table(file_path: Path):
             password=DB_PASS,
         )
         cursor = conn.cursor()
-        cmd = f"COPY {table_name}({headers}) FROM STDIN WITH (FORMAT CSV, HEADER FALSE)"
+        cmd = f"COPY {table_name}({header_line}) FROM STDIN WITH (FORMAT CSV, HEADER FALSE)"
         cursor.copy_expert(cmd, f)
         conn.commit()
 
