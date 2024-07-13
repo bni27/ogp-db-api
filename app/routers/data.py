@@ -1,5 +1,6 @@
 import logging
-from os.path import exists, join, isdir, mkdir
+from os import mkdir
+from os.path import exists, join, isdir
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, status, UploadFile
