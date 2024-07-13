@@ -75,7 +75,10 @@ def load_data_into_table(file_path: Path):
         headers = header_line.split(",")
         create_table_from_headers(headers, table_name)
         conn = psycopg2.connect(
-            dbname=DB_NAME, host=DB_IP, port=5432, user=DB_USER, password=DB_PASS
+            dbname=DB_NAME,
+            host=f"/cloudsql/{INSTANCE_CONNECTION_NAME}",
+            user=DB_USER,
+            password=DB_PASS,
         )
         cursor = conn.cursor()
         cmd = f"COPY {table_name}({headers}) FROM STDIN WITH (FORMAT CSV, HEADER FALSE)"
