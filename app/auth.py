@@ -22,7 +22,9 @@ DECRYPTER = PKCS1_OAEP.new(rsa_key)
 def decode_api_key(api_key: str) -> dict[str, str | int]:
     bytes_key = bytes.fromhex(api_key)
     _details = DECRYPTER.decrypt(bytes_key)
-    return json.loads(_details)
+    details = json.loads(_details)
+    details["auth_level"] = AuthLevel[details["auth_level"].upper()]
+    return details
 
 
 def generate_api_key(name: str, auth_level: AuthLevel, exp_date: int) -> str:
@@ -41,8 +43,7 @@ def validate_api_key(api_key_header: str = Security(api_key_header)) -> User:
     try:
         api_key_details = decode_api_key(api_key_header)
         user = User.model_validate(api_key_details)
-    except Exception as e:
-        print(e)
+    except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing or invalid API key",
