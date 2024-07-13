@@ -50,7 +50,8 @@ def upload_file(
 
 
 @router.post('/updateRaw')
-def update_raw():
+def update_raw(authenticated_user: User = Depends(validate_api_key)):
+    authenticated_user.check_privilege()
     file_path = Path(
         '/data/verified/batteries_electrolyzer/batteries_electrolyzer.csv'
     )
