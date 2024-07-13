@@ -41,7 +41,8 @@ def validate_api_key(api_key_header: str = Security(api_key_header)) -> User:
     try:
         api_key_details = decode_api_key(api_key_header)
         user = User.model_validate(api_key_details)
-    except Exception:
+    except Exception as e:
+        print(e)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing or invalid API key",
