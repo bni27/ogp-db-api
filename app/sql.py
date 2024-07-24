@@ -25,7 +25,7 @@ def column_tuples(column_names: list[str]) -> list[tuple[str, str]]:
     columns: list[tuple[str, str]] = []
     for column_name in column_names:
         lower_col = column_name.lower()
-        for dtype, conditions in COLUMN_TYPE_NOTATION.values():
+        for dtype, conditions in COLUMN_TYPE_NOTATION.items():
             if (
                 any(lower_col.endswith(suffix) for suffix in conditions["suffixes"])
                 or 
