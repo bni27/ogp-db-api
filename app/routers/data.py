@@ -5,7 +5,8 @@ from fastapi import APIRouter, Depends, File, status, UploadFile
 
 from app.auth import AuthLevel, User, validate_api_key
 from app.db import load_raw_data, stage_data, union_prod
-from app.pg import select_data
+from app.pg import row_count, select_data
+from app.sql import raw_schema, stage_schema
 from app.filesys import build_raw_file_path, get_data_files, get_directories
 
 router = APIRouter()
@@ -31,7 +32,7 @@ async def update(
 def get_asset_classes(verified: bool = True):
     return {
         "verification_status": "verified" if verified else "unverified",
-        "asset_classes": [d for d in get_directories(verified)],
+        "asset_classes": [d.stem for d in get_directories(verified)],
     }
 
 
@@ -86,9 +87,10 @@ def update_raw(
     authenticated_user.check_privilege()
     file_path = build_raw_file_path(file_name, asset_class, verified)
     try:
-        load_raw_data(file_path)
+        table = load_raw_data(file_path)
     except Exception as e:
         logger.exception(e)
+    return [r for r in row_count(table)]
 
 
 @router.post("/assetClasses/{asset_class}/stage/update")
@@ -108,4 +110,5 @@ def get_stage_data(
     authenticated_user: User = Depends(validate_api_key),
 ):
     authenticated_user.check_privilege()
+    return select_data(asset_class, stage_schema(verified))
 

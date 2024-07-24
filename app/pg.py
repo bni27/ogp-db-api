@@ -78,6 +78,7 @@ def load_data_from_file(file_path: Path, table_name: str):
         create_table_from_headers(cur, table_name, headers, schema)
         cur.copy_expert(copy_statement(table_name, header_line, schema), f)
         cur.commit()
+    return f"{schema}.{table_name}"
 
 
 def select_data(
@@ -93,6 +94,13 @@ def select_data(
         rows = cur.fetchall()
         cols = cur.description
         return ({c: row[i] for i, c in enumerate(cols)} for row in rows)
+
+
+def row_count(table_name: str, schema: str | None = None):
+    table_str = table_name if schema is None else f"{schema}.{table_name}"
+    with get_cursor() as cur:
+        cur.execute(f"SELECT COUNT(*) FROM {table_str};")
+        return cur.fetchall()
 
 
 def all_tables_in_schema(schema: str) -> Generator[str, None, None]:

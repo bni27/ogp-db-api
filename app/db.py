@@ -17,7 +17,7 @@ DB_IP = os.environ.get("DB_IP")
 
 
 def load_raw_data(file_path: Path):
-    load_data_from_file(file_path, file_path.stem)
+    return load_data_from_file(file_path, file_path.stem)
 
 
 def stage_data(asset_class: str, verified: bool = False):
