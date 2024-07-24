@@ -83,13 +83,13 @@ def copy_statement(table_name: str, header_line: str, schema) -> str:
 
 def select_statement(
     table_name: str,
-    schema: str | None = None,
     columns: str | list[str] = "*",
+    schema: str | None = None,
     where: str | None = None,
     limit: int | None = None,
 ):
     table_string = table_name if schema is None else f"{schema}.{table_name}"
-    col_str = ','.join(columns) if isinstance(columns, list) else columns
+    col_str = ', '.join(columns) if isinstance(columns, list) else columns
     query = f"SELECT {col_str} FROM {table_string}"
     query += "" if where is None else f" {where}"
     query += "" if limit is None else f" LIMIT {limit}"

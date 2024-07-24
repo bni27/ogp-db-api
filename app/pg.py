@@ -51,7 +51,7 @@ def create_table_from_headers(
     headers: list[str],
     schema: str | None = None,
 ):
-    cur.execute(create_table_statement(table_name, schema, headers))
+    cur.execute(create_table_statement(table_name, headers, schema))
 
 
 def create_table_from_select(
