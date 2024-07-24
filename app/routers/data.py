@@ -90,6 +90,7 @@ def update_raw(
         table = load_raw_data(file_path)
     except Exception as e:
         logger.exception(e)
+        raise e
     return [r for r in row_count(table)]
 
 
