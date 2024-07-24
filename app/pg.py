@@ -97,7 +97,7 @@ def row_count(table_name: str, schema: str | None = None):
     table_str = table_name if schema is None else f"{schema}.{table_name}"
     with get_cursor() as cur:
         cur.execute(f"SELECT COUNT(*) FROM {table_str};")
-        return cur.fetchall()
+        return cur.fetchone()
 
 
 def all_tables_in_schema(schema: str) -> Generator[str, None, None]:

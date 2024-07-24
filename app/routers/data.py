@@ -91,7 +91,10 @@ def update_raw(
     except Exception as e:
         logger.exception(e)
         raise e
-    return [r for r in row_count(table)]
+    return {
+        "table_name": table,
+        "rows": row_count(table)[0],
+    }
 
 
 @router.post("/assetClasses/{asset_class}/stage/update")
