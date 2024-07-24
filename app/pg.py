@@ -37,6 +37,7 @@ def get_cursor():
         password=DB_PASS,
     )
     yield conn.cursor()
+    conn.commit()
     conn.close()
     return
 
@@ -74,7 +75,6 @@ def load_data_from_file(file_path: Path, table_name: str):
         headers = header_line.split(",")
         create_table_from_headers(cur, table_name, headers, schema)
         cur.copy_expert(copy_statement(table_name, header_line, schema), f)
-        cur.commit()
     return f"{schema}.{table_name}"
 
 
