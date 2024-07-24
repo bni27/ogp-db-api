@@ -33,6 +33,7 @@ def column_tuples(column_names: list[str]) -> list[tuple[str, str]]:
             ):
                 columns.append((lower_col, dtype))
                 break
+    
     return columns
 
 
@@ -69,9 +70,11 @@ def create_table_statement(
 ) -> str:
     table_str = table_name if schema is None else f"{schema}.{table_name}"
     col_str = gen_col_str(columns=column_tuples(columns), primary_key=primary_key)
-    return f"""CREATE TABLE IF NOT EXISTS {table_str}
+    statement = f"""CREATE TABLE IF NOT EXISTS {table_str}
         ( {col_str} )
         """
+    print(statement)
+    return statement
 
 
 def copy_statement(table_name: str, header_line: str, schema) -> str:
