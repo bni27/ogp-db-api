@@ -4,7 +4,8 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, File, status, UploadFile
 
 from app.auth import AuthLevel, User, validate_api_key
-from app.db import load_raw_data, select_data, stage_data, union_prod
+from app.db import load_raw_data, stage_data, union_prod
+from app.pg import select_data
 from app.filesys import build_raw_file_path, get_data_files, get_directories
 
 router = APIRouter()
@@ -13,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 @router.get("/")
 async def data(asset_class: str | None = None):
-    return select_data(asset_class)
+    return select_data(asset_class, "raw_verified")
 
 
 @router.post("/update", status_code=status.HTTP_204_NO_CONTENT)
@@ -107,4 +108,4 @@ def get_stage_data(
     authenticated_user: User = Depends(validate_api_key),
 ):
     authenticated_user.check_privilege()
-    
+
