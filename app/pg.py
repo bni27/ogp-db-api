@@ -43,7 +43,6 @@ def get_cursor():
 
 def drop_table(cur, table_name: str, schema: str = "raw"):
     cur.execute(drop_table_statement(table_name, schema))
-    cur.commit()
 
 
 def create_table_from_headers(
@@ -53,7 +52,6 @@ def create_table_from_headers(
     schema: str | None = None,
 ):
     cur.execute(create_table_statement(table_name, schema, headers))
-    cur.commit()
 
 
 def create_table_from_select(
@@ -66,7 +64,6 @@ def create_table_from_select(
     cur.execute(
        f"CREATE TABLE {table_str} AS {select_statement}"
     )
-    cur.commit()
 
 
 def load_data_from_file(file_path: Path, table_name: str):
