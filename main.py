@@ -2,10 +2,11 @@ import os
 
 from fastapi import Depends, FastAPI, status
 from fastapi.responses import JSONResponse
+from psycopg2 import OperationalError
 import uvicorn
 
 from app.auth import validate_api_key
-from app.db import get_pool
+from app.pg import get_cursor
 from app.routers import auth, data
 
 app = FastAPI(
@@ -29,9 +30,9 @@ app.include_router(
 @app.get("/health", status_code=status.HTTP_204_NO_CONTENT)
 async def root():
     try:
-        c = get_pool().connect()
-        c.close()
-    except Exception as e:
+        with get_cursor():
+            pass
+    except OperationalError as e:
         print(e)
         return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
