@@ -31,7 +31,7 @@ def column_tuples(column_names: list[str]) -> list[tuple[str, str]]:
                 or 
                 any(lower_col.endswith(prefix) for prefix in conditions["prefixes"])
             ):
-                columns.append(lower_col, dtype)
+                columns.append((lower_col, dtype))
                 break
     return columns
 
