@@ -114,5 +114,5 @@ def get_stage_data(
     authenticated_user: User = Depends(validate_api_key),
 ):
     authenticated_user.check_privilege()
-    return select_data(asset_class, stage_schema(verified))
+    return select_data(asset_class, schema=stage_schema(verified))
 

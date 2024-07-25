@@ -85,7 +85,7 @@ def select_data(
     where: str | None = None,
     limit: int | None = None,
 ) -> Generator[dict[str, Any], None, None]:
-    statement = select_statement(table_name, schema, columns, where, limit)
+    statement = select_statement(table_name, columns, schema, where, limit)
     with get_cursor() as cur:
         cur.execute(statement)
         rows = cur.fetchall()
