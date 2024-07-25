@@ -7,7 +7,7 @@ from app.pg import (
     union_all_in_schema,
     union_tables,
 )
-from app.sql import raw_schema, stage_schema, _verified_name
+from app.sql import prod_table, raw_schema, stage_schema
 
 DB_USER = os.environ.get("DB_USER")
 DB_PASS = os.environ.get("DB_PASS")
@@ -26,4 +26,4 @@ def stage_data(asset_class: str, verified: bool = False):
 
 
 def union_prod(verified: bool = False):
-    union_all_in_schema(stage_schema(verified), _verified_name(verified) , "prod")
+    union_all_in_schema(stage_schema(verified), prod_table(verified) , "prod")

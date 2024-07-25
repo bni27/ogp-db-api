@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, File, status, UploadFile
 from app.auth import AuthLevel, User, validate_api_key
 from app.db import load_raw_data, stage_data, union_prod
 from app.pg import row_count, select_data
-from app.sql import raw_schema, stage_schema
+from app.sql import prod_table, stage_schema
 from app.filesys import build_raw_file_path, get_data_files, get_directories
 
 router = APIRouter()
@@ -14,18 +14,17 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("/")
-async def data(asset_class: str | None = None):
-    return select_data(asset_class, "raw_verified")
+async def data(verified: bool = True):
+    return select_data(prod_table(verified), "prod")
 
 
 @router.post("/update", status_code=status.HTTP_204_NO_CONTENT)
 async def update(
-    verified: bool = True,
+    verified: bool = False,
     authenticated_user: User = Depends(validate_api_key),
 ):
     authenticated_user.check_privilege()
-    union_prod()
-    return
+    union_prod(verified)
 
 
 @router.get("/assetClasses")
@@ -115,12 +114,3 @@ def get_stage_data(
 ):
     authenticated_user.check_privilege()
     return select_data(asset_class, schema=stage_schema(verified))
-
-
-@router.post("/update")
-def update_prod(
-    verified: bool = False,
-    authenticated_user: User = Depends(validate_api_key),
-):
-    authenticated_user.check_privilege()
-    union_prod(verified)
