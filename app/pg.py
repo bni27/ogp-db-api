@@ -132,13 +132,13 @@ def union_tables(tables: Iterable[str], target_table: str, target_schema: str):
             if col not in columns:
                 columns.append(col)
                 tables_columns[table].append(col)
-    union_headers = {}
-    for table in tables:
-        union_headers[table] = [
-            (col if col in tables_columns[table] else f"NULL as {col}") 
+    union_headers = {
+        table: [
+            col if col in tables_columns[table] else f"NULL as {col}"
             for col in columns
-        ]
-    union_selects = union_statement(*(select_statement(table, columns=union_headers[table]) for table in tables))    
+        ] for table in tables
+    }
+    union_selects = union_statement(*(select_statement(t, columns=union_headers[t]) for t in tables))    
     print(union_selects)
     print(union_headers)
     with get_cursor() as cur:
