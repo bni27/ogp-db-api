@@ -131,8 +131,8 @@ def union_tables(tables: Iterable[str], target_table: str, target_schema: str):
         tables_columns[table] = []
         for col in table_columns(table):
             tables_columns[table].append(col[0])
-            if col not in columns:
-                columns.append(col)
+            if col[0] not in columns:
+                columns.append(col[0])
     union_headers = {
         table: [
             col if col in tables_columns[table] else f"NULL as {col}"
