@@ -112,7 +112,7 @@ def all_tables_in_schema(schema: str) -> Generator[str, None, None]:
 
 
 def table_columns(table_name: str, schema: str | None = None) -> Generator[tuple[str, str], None, None]:
-    statement = select_statement(table_name, schema, limit=0)
+    statement = select_statement(table_name, "*", schema, limit=0)
     with get_cursor() as cur:
         cur.execute(statement)
         return ((c.name, POSTGRES_TYPES.get(c.type_code, "VARCHAR")) for c in cur.description)
