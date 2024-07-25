@@ -22,7 +22,6 @@ def load_raw_data(file_path: Path):
 
 def stage_data(asset_class: str, verified: bool = False):
     tables = [f"{raw_schema(verified)}.{f.stem}" for f in get_data_files(asset_class, verified)]
-    print(tables)
     union_tables(tables, asset_class, stage_schema(verified))
 
 
