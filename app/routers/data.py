@@ -116,3 +116,11 @@ def get_stage_data(
     authenticated_user.check_privilege()
     return select_data(asset_class, schema=stage_schema(verified))
 
+
+@router.post("/update")
+def update_prod(
+    verified: bool = False,
+    authenticated_user: User = Depends(validate_api_key),
+):
+    authenticated_user.check_privilege()
+    union_prod(verified)
