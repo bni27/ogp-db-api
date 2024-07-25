@@ -97,6 +97,4 @@ def select_statement(
 
 
 def union_statement(*statements: str) -> str:
-    print("THIS IS MY LOG FOR UNION STATEMENT")
-    print(statements)
     return " UNION ".join(statements)
