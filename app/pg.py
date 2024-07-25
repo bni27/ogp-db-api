@@ -139,6 +139,8 @@ def union_tables(tables: Iterable[str], target_table: str, target_schema: str):
             for col in columns
         ]
     union_selects = union_statement(*(select_statement(table, columns=union_headers[table]) for table in tables))    
+    print(union_selects)
+    print(union_headers)
     with get_cursor() as cur:
         drop_table(cur, target_table, target_schema)
         create_table_from_select(cur, target_table, union_selects, target_schema)
