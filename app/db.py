@@ -26,4 +26,4 @@ def stage_data(asset_class: str, verified: bool = False):
 
 
 def union_prod(verified: bool = False):
-    union_all_in_schema(stage_schema(verified), prod_table(verified) , "prod")
+    union_all_in_schema(stage_schema(verified), prod_table(verified), "prod")
