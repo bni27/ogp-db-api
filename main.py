@@ -15,7 +15,7 @@ app = FastAPI(
     contact={
         "name": "Ian Bakst",
         "email": "ian.bakst@oxfordglobalprojects.com",
-    }
+    },
 )
 
 app.include_router(
@@ -27,18 +27,28 @@ app.include_router(
 )
 
 
-@app.get("/health", status_code=status.HTTP_204_NO_CONTENT)
+@app.get("/health", status_code=status.HTTP_200_OK)
 async def root():
+    db_ok = True
+    filesys_ok = True
     try:
         with get_cursor():
             pass
+        assert os.path.exists("/data")
     except OperationalError as e:
         print(e)
-        return JSONResponse(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            content={"health": "Cannot connect to DB"},
-        )
-    return
+        db_ok = False
+    except AssertionError:
+        filesys_ok = False
+    status = status.HTTP_200_OK if all(db_ok, filesys_ok) else status.HTTP_503_SERVICE_UNAVAILABLE
+    return JSONResponse(
+        status_code=status,
+        content={
+            "healthy": all(db_ok, filesys_ok),
+            "db_connection": db_ok,
+            "file_system_connection": filesys_ok,
+        },
+    )
 
 
 if __name__ == "__main__":
