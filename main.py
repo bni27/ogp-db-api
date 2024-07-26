@@ -40,11 +40,12 @@ async def root():
         db_ok = False
     except AssertionError:
         filesys_ok = False
-    status = status.HTTP_200_OK if all(db_ok, filesys_ok) else status.HTTP_503_SERVICE_UNAVAILABLE
+    is_ok = all([db_ok, filesys_ok])
+    status = status.HTTP_200_OK if is_ok else status.HTTP_503_SERVICE_UNAVAILABLE
     return JSONResponse(
         status_code=status,
         content={
-            "healthy": all(db_ok, filesys_ok),
+            "healthy": is_ok,
             "db_connection": db_ok,
             "file_system_connection": filesys_ok,
         },
