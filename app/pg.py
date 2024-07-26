@@ -104,8 +104,8 @@ def all_tables_in_schema(schema: str) -> Generator[str, None, None]:
     where = f"WHERE table_schema = '{schema}'"
     q_results = select_statement(
         "tables",
-        "information_schema",
         ["table_name"],
+        "information_schema",
         where,
     )
     return (r["table_name"] for r in q_results)
