@@ -62,9 +62,7 @@ def create_table_from_select(
     schema: str | None = None,
 ):
     table_str = table_name if schema is None else f"{schema}.{table_name}"
-    cur.execute(
-       f"CREATE TABLE {table_str} AS {select_statement}"
-    )
+    cur.execute(f"CREATE TABLE {table_str} AS {select_statement}")
 
 
 def load_data_from_file(file_path: Path, table_name: str):
@@ -86,6 +84,10 @@ def select_data(
     limit: int | None = None,
 ) -> Generator[dict[str, Any], None, None]:
     statement = select_statement(table_name, columns, schema, where, limit)
+    return _select(statement)
+
+
+def _select(statement: str) -> Generator[dict[str, Any], None, None]:
     with get_cursor() as cur:
         cur.execute(statement)
         rows = cur.fetchall()
@@ -102,20 +104,25 @@ def row_count(table_name: str, schema: str | None = None):
 
 def all_tables_in_schema(schema: str) -> Generator[str, None, None]:
     where = f"WHERE table_schema = '{schema}'"
-    q_results = select_statement(
+    statement = select_statement(
         "tables",
         ["table_name"],
         "information_schema",
         where,
     )
-    return (r["table_name"] for r in q_results)
+    return (r["table_name"] for r in _select(statement))
 
 
-def table_columns(table_name: str, schema: str | None = None) -> Generator[tuple[str, str], None, None]:
+def table_columns(
+    table_name: str, schema: str | None = None
+) -> Generator[tuple[str, str], None, None]:
     statement = select_statement(table_name, "*", schema, limit=0)
     with get_cursor() as cur:
         cur.execute(statement)
-        return ((c.name, POSTGRES_TYPES.get(c.type_code, "VARCHAR")) for c in cur.description)
+        return (
+            (c.name, POSTGRES_TYPES.get(c.type_code, "VARCHAR"))
+            for c in cur.description
+        )
 
 
 def union_all_in_schema(schema: str, target_table: str, target_schema: str):
@@ -135,11 +142,13 @@ def union_tables(tables: Iterable[str], target_table: str, target_schema: str):
                 columns.append(col[0])
     union_headers = {
         table: [
-            col if col in tables_columns[table] else f"NULL as {col}"
-            for col in columns
-        ] for table in tables
+            col if col in tables_columns[table] else f"NULL as {col}" for col in columns
+        ]
+        for table in tables
     }
-    union_selects = union_statement(*(select_statement(t, columns=union_headers[t]) for t in tables))    
+    union_selects = union_statement(
+        *(select_statement(t, columns=union_headers[t]) for t in tables)
+    )
     with get_cursor() as cur:
         drop_table(cur, target_table, target_schema)
         create_table_from_select(cur, target_table, union_selects, target_schema)
