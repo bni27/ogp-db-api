@@ -110,7 +110,6 @@ def all_tables_in_schema(schema: str) -> Generator[str, None, None]:
         "information_schema",
         where,
     )
-    print(statement)
     return (r["table_name"] for r in _select(statement))
 
 
@@ -127,8 +126,7 @@ def table_columns(
 
 
 def union_all_in_schema(schema: str, target_table: str, target_schema: str):
-    tables = (f"{schema}.{t}" for t in all_tables_in_schema(schema))
-    print([t for t in tables])
+    tables = [f"{schema}.{t}" for t in all_tables_in_schema(schema)]
     union_tables(tables, target_table, target_schema)
 
 
