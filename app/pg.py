@@ -229,20 +229,18 @@ def build_duration_statement(base_statement: str, columns: list[str]) -> tuple[s
     
     if len(added_columns) > 0:
         add_statements = [f"NULL as {col}" for col in added_columns]
-        base_statement = f"SELECT *, {', '.join(add_statements)} FROM ({base_statement})"
+        base_statement = f"SELECT *, {', '.join(add_statements)} FROM ({base_statement}) as y"
         columns.extend(added_columns)
-    print(columns)
+        column_statements.extend(added_columns)
     return (
-        f"SELECT {', '.join(column_statements)} FROM ({base_statement})as b",
+        f"SELECT {', '.join(column_statements)} FROM ({base_statement}) as b",
         columns,
     )
 
 
 def build_stage_statement(tables: list[str]):
     unioned_asset_class, columns = build_union_statement(tables)
-    print(unioned_asset_class)
     duration_statement, columns2 = build_duration_statement(unioned_asset_class, columns)
-    print(duration_statement)
     from_statement = f"""FROM ({duration_statement}) as a
     LEFT JOIN (SELECT d1.* FROM "reference"."gdp_deflators" as d1 INNER JOIN (SELECT max(year) as year FROM "reference"."gdp_deflators") as d2 on d1.year = d2.year) as h on (a.country_iso3 = h.country_code)"""
 
