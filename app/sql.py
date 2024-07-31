@@ -117,7 +117,7 @@ def select_statement(
     query = f"SELECT {col_str} FROM {table_string}"
     query += "" if where is None else f" {where}"
     query += "" if limit is None else f" LIMIT {limit}"
-    return f"{query};"
+    return f"{query}"
 
 
 def union_statement(*statements: str) -> str:
