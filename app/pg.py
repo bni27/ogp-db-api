@@ -200,7 +200,7 @@ def build_year_date_statement(
     )
 
 
-def build_duration_statement(base_statement: str, columns: list[str]) -> str:
+def build_duration_statement(base_statement: str, columns: list[str]) -> tuple[str, list[str]]:
     column_statements = []
     visited = []
     added_columns = [
@@ -231,16 +231,18 @@ def build_duration_statement(base_statement: str, columns: list[str]) -> str:
         add_statements = [f"NULL as {col}" for col in added_columns]
         base_statement = f"SELECT *, {', '.join(add_statements)} FROM ({base_statement})"
         columns.extend(added_columns)
+    print(columns)
     return (
-        f"SELECT {', '.join(column_statements)} FROM ({base_statement})",
+        f"SELECT {', '.join(column_statements)} FROM ({base_statement})as b",
         columns,
     )
 
 
 def build_stage_statement(tables: list[str]):
     unioned_asset_class, columns = build_union_statement(tables)
-    duration_statement, columns = build_duration_statement(unioned_asset_class, columns)
-    
+    print(unioned_asset_class)
+    duration_statement, columns2 = build_duration_statement(unioned_asset_class, columns)
+    print(duration_statement)
     from_statement = f"""FROM ({duration_statement}) as a
     LEFT JOIN (SELECT d1.* FROM "reference"."gdp_deflators" as d1 INNER JOIN (SELECT max(year) as year FROM "reference"."gdp_deflators") as d2 on d1.year = d2.year) as h on (a.country_iso3 = h.country_code)"""
 
@@ -248,7 +250,7 @@ def build_stage_statement(tables: list[str]):
     idx = 1
     new_column_statements = []
     new_columns = []
-    for column in columns:
+    for column in columns2:
         if "_cost_local_" in column.lower():
             col_stem = column.lower().strip("_year").strip("_currency").strip("_millions").strip("_local")
             if col_stem in cost_columns:
@@ -269,7 +271,7 @@ def build_stage_statement(tables: list[str]):
             new_columns.append(f"{col_stem}_norm_millions")
             new_columns.append(f"{col_stem}_norm_currency")
             new_columns.append(f"{col_stem}_norm_year")
-    column_statements = columns + new_column_statements
+    column_statements = columns2 + new_column_statements
     stmt = f"SELECT {', '.join(column_statements)} {from_statement}"
     print(stmt)
     return stmt
