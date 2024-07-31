@@ -28,7 +28,7 @@ app.include_router(
 
 
 @app.get("/health", status_code=status.HTTP_200_OK)
-async def root():
+async def health():
     db_ok = True
     filesys_ok = True
     try:
@@ -41,9 +41,9 @@ async def root():
     except AssertionError:
         filesys_ok = False
     is_ok = all([db_ok, filesys_ok])
-    status = status.HTTP_200_OK if is_ok else status.HTTP_503_SERVICE_UNAVAILABLE
+    health_status = status.HTTP_200_OK if is_ok else status.HTTP_503_SERVICE_UNAVAILABLE
     return JSONResponse(
-        status_code=status,
+        status_code=health_status,
         content={
             "healthy": is_ok,
             "db_connection": db_ok,

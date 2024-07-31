@@ -1,13 +1,35 @@
+from string import ascii_lowercase
+from typing import Generator
+
+
 PRIMARY_KEYS = ["project_id", "sample"]
 
 COLUMN_TYPE_NOTATION = {
     "INTEGER": {"suffixes": ["_year"], "prefixes": []},
-    "BOOLEAN": {"suffixes": [], "prefixes":["is_"]},
-    "DATE": {"suffixes": ["_date"], "prefixes":[]},
-    "FLOAT": {"suffixes": ["_millions", "_value", "_ratio"], "prefixes":[]},
-    "VARCHAR": {"suffixes": [""], "prefixes": []}
+    "BOOLEAN": {"suffixes": [], "prefixes": ["is_"]},
+    "DATE": {"suffixes": ["_date"], "prefixes": []},
+    "FLOAT": {"suffixes": ["_millions", "_value", "_ratio", "_duration", "_thousands"], "prefixes": []},
+    "VARCHAR": {"suffixes": [""], "prefixes": []},
 }
 
+STANDARD_DAY = "-07-02"
+
+class AliasFactory():
+    _aliases: Generator[str, None, None]
+    _previous: str | None
+    def __init__(self):
+        self._aliases = (a for a in ascii_lowercase)
+    
+    @property
+    def value(self):
+        try:
+            return next(self._aliases)
+        except StopIteration:
+            self._aliases = (a for a in ascii_lowercase)
+            return next(self._aliases)
+
+
+ALIASES = AliasFactory()
 
 def _verified_name(verified: bool = False) -> str:
     return "verified" if verified else "unverified"
@@ -30,14 +52,12 @@ def column_tuples(column_names: list[str]) -> list[tuple[str, str]]:
     for column_name in column_names:
         lower_col = column_name.lower()
         for dtype, conditions in COLUMN_TYPE_NOTATION.items():
-            if (
-                any(lower_col.endswith(suffix) for suffix in conditions["suffixes"])
-                or 
-                any(lower_col.endswith(prefix) for prefix in conditions["prefixes"])
-            ):
+            if any(
+                lower_col.endswith(suffix) for suffix in conditions["suffixes"]
+            ) or any(lower_col.endswith(prefix) for prefix in conditions["prefixes"]):
                 columns.append((lower_col, dtype))
                 break
-    
+
     return columns
 
 
@@ -51,7 +71,7 @@ def gen_col_str(
         primary_key = [primary_key]
     string_pieces = []
     for column in columns:
-        column_repr = ' '.join(column)
+        column_repr = " ".join(column)
         column_repr += " NOT NULL" if column[0] in primary_key else ""
         string_pieces.append(column_repr)
     string_pieces.append(f"PRIMARY KEY ({', '.join(primary_key)})")
@@ -93,12 +113,58 @@ def select_statement(
     limit: int | None = None,
 ):
     table_string = table_name if schema is None else f"{schema}.{table_name}"
-    col_str = ', '.join(columns) if isinstance(columns, list) else columns
+    col_str = ", ".join(columns) if isinstance(columns, list) else columns
     query = f"SELECT {col_str} FROM {table_string}"
     query += "" if where is None else f" {where}"
     query += "" if limit is None else f" LIMIT {limit}"
-    return query + ";"
+    return f"{query};"
 
 
 def union_statement(*statements: str) -> str:
     return " UNION ".join(statements)
+
+
+def join_statement(
+    exp_1: str,
+    exp_2: str,
+    on: str,
+    chained: bool = False,
+) -> tuple[str, dict[str, str]]:
+    alias_map = {}
+    if chained:
+        join_str = f"{exp_1}"
+    else:
+        alias_map[exp_1] = ALIASES.value
+        f"({exp_1}) AS {alias_map[exp_1]}"
+    
+    alias_map[exp_2] = ALIASES.value
+    join_str += f" JOIN ({exp_2}) AS {alias_map[exp_2]} ON {on}"
+    return join_str, alias_map
+
+
+def case_if_year_and_date(column_stem: str) -> str:
+    return f"""CASE WHEN {column_stem}_year IS NULL 
+    THEN DATE_PART('year', {column_stem}_date) ELSE {column_stem}_year 
+    END AS {column_stem}_year"""
+
+
+def date_from_year(year_col: str, year_literal: int | None = None, _mm_dd: str = STANDARD_DAY) -> str:
+    year = year_col if year_literal is None else f"'{year_literal}'"
+    return f"date(concat({year}, '{_mm_dd}'))"
+
+
+def duration_statements(col_stem: str) -> str:
+    start_year = f"start_{col_stem}_year"
+    start_date = f"start_{col_stem}_date"
+    _duration_statements = []
+    for prefix in ["est", "act"]:    
+        end_date = f"{prefix}_completion_date"
+        end_year = f"{prefix}_completion_year"
+        duration_col = f"{prefix}_{col_stem}_duration"
+        _duration_statements.append(
+            f"""CASE WHEN {duration_col} is NULL THEN 
+            ((CASE WHEN {end_date} is NULL THEN {date_from_year(end_year)} ELSE {end_date} END)
+            - (CASE WHEN {start_date} is NULL THEN {date_from_year(start_year)} ELSE {start_date} END))::FLOAT / 365        
+            ELSE {duration_col} END as {duration_col}"""
+        )
+    return ", ".join(_duration_statements)

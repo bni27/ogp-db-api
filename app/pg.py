@@ -1,14 +1,17 @@
 from contextlib import contextmanager
 import os
 from pathlib import Path
-from typing import Any, Generator, Iterable
+from typing import Any, Generator
 
 import psycopg2
 
 from app.sql import (
+    case_if_year_and_date,
     copy_statement,
     create_table_statement,
     drop_table_statement,
+    duration_statements,
+    join_statement,
     select_statement,
     union_statement,
 )
@@ -26,6 +29,14 @@ POSTGRES_TYPES = {
     1082: "DATE",
     16: "BOOLEAN",
 }
+
+STANDARD_DAY = "-07-02"
+
+
+STAGE_JOINS: list[tuple[str, str]] = [
+    ('"reference"."exchange_rates', ""),
+    ('"reference"."gdp_deflators"', ""),
+]
 
 
 @contextmanager
@@ -130,7 +141,14 @@ def union_all_in_schema(schema: str, target_table: str, target_schema: str):
     union_tables(tables, target_table, target_schema)
 
 
-def union_tables(tables: Iterable[str], target_table: str, target_schema: str):
+def union_tables(tables: list[str], target_table: str, target_schema: str):
+    union_selects, _ = build_union_statement(tables)
+    with get_cursor() as cur:
+        drop_table(cur, target_table, target_schema)
+        create_table_from_select(cur, target_table, union_selects, target_schema)
+
+
+def build_union_statement(tables: list[str]) -> tuple[str, list[str]]:
     columns = []
     tables_columns = {}
     for table in tables:
@@ -146,9 +164,112 @@ def union_tables(tables: Iterable[str], target_table: str, target_schema: str):
         ]
         for table in tables
     }
-    union_selects = union_statement(
-        *(select_statement(t, columns=union_headers[t]) for t in tables)
+    return (
+        union_statement(
+            *(select_statement(t, columns=union_headers[t]) for t in tables)
+        ),
+        columns,
     )
-    with get_cursor() as cur:
-        drop_table(cur, target_table, target_schema)
-        create_table_from_select(cur, target_table, union_selects, target_schema)
+
+
+def build_year_date_statement(
+    base_statement: str, columns: list[str]
+) -> tuple[str, list[str]]:
+    column_statements = []
+    return_columns = []
+    for col in columns:
+        c = col.lower()
+        col_stem = c.strip("year")
+        return_columns.append(c)
+        if c.endswith("_year") and f"{col_stem}_date" in columns:
+            column_statements.append(case_if_year_and_date(col_stem))
+        else:
+            column_statements.append(col.lower())
+        if col_stem.startswith("start_"):
+            col_middle = col_stem.strip("start_")
+            if (n := f"act_{col_middle}_duration") not in columns:
+                column_statements.append(f"NULL as {n}")
+                return_columns.append(n)
+            if (n := f"est_{col_middle}_duration") not in columns:
+                column_statements.append(f"NULL as {n}")
+                return_columns.append(n)
+
+    return (
+        f"SELECT {', '.join(column_statements)} FROM ({base_statement})",
+        return_columns,
+    )
+
+
+def build_duration_statement(base_statement: str, columns: list[str]) -> str:
+    column_statements = []
+    visited = []
+    added_columns = [
+        c
+        for c in [
+            "est_completion_date",
+            "est_completion_year",
+            "act_completion_date",
+            "act_completion_year",
+        ]
+        if c not in columns
+    ]
+    for column in columns:
+        c = column.lower()
+        if c.startswith("start_") and (col_stem := c.strip("start_").strip("_year").strip("_date")) not in visited:
+            visited.append(col_stem)
+            for col in [
+                    f"start_{col_stem}_date",
+                    f"start_{col_stem}_year",
+                ]:
+                if col not in columns:
+                    added_columns.append(col)
+            column_statements.append(duration_statements(col_stem))
+        else:
+            column_statements.append(column)
+    
+    if len(added_columns) > 0:
+        add_statements = [f"NULL as {col}" for col in added_columns]
+        base_statement = f"SELECT *, {', '.join(add_statements)} FROM ({base_statement})"
+        columns.extend(added_columns)
+    return (
+        f"SELECT {', '.join(column_statements)} FROM ({base_statement})",
+        columns,
+    )
+
+
+def build_stage_statement(tables: list[str]):
+    unioned_asset_class, columns = build_union_statement(tables)
+    duration_statement, columns = build_duration_statement(unioned_asset_class, columns)
+    
+    from_statement = f"""FROM ({duration_statement}) as a
+    LEFT JOIN (SELECT d1.* FROM "reference"."gdp_deflators" as d1 INNER JOIN (SELECT max(year) as year FROM "reference"."gdp_deflators") as d2 on d1.year = d2.year) as h on (a.country_iso3 = h.country_code)"""
+
+    cost_columns: list[tuple[str, int]] = []
+    idx = 1
+    new_column_statements = []
+    new_columns = []
+    for column in columns:
+        if "_cost_local_" in column.lower():
+            col_stem = column.lower().strip("_year").strip("_currency").strip("_millions").strip("_local")
+            if col_stem in cost_columns:
+                continue
+            cost_columns.append((col_stem, idx))
+            idx += 1
+            # val_col = f"{col_stem}_local_millions"
+            # cur_col = f"{col_stem}_local_currency"
+            yr_col = f"{col_stem}_local_year"
+            from_statement += f"""
+            LEFT JOIN "reference"."exchange_rates" as e{idx} on (a.country_iso3 = e{idx}.country_code) and (a.{yr_col} = e{idx}.year)
+            LEFT JOIN (SELECT * FROM "reference"."exchange_rates" WHERE country_code = 'USA') as f{idx} on a.{yr_col} = f{idx}.year
+            LEFT JOIN "reference"."gdp_deflators" as g{idx} on (a.country_iso3 = g{idx}.country_code) and (a.{yr_col} = g{idx}.year)"""
+            new_column_statements.append(f"""a.{col_stem}_local_millions * f{idx}.exchange_rate * h.deflation_factor 
+            / e{idx}.exchange_rate  / g{idx}.deflation_factor as {col_stem}_norm_millions""")
+            new_column_statements.append(f"'USD' as {col_stem}_norm_currency")
+            new_column_statements.append(f"h.year as {col_stem}_norm_year")
+            new_columns.append(f"{col_stem}_norm_millions")
+            new_columns.append(f"{col_stem}_norm_currency")
+            new_columns.append(f"{col_stem}_norm_year")
+    column_statements = columns + new_column_statements
+    stmt = f"SELECT {', '.join(column_statements)} {from_statement}"
+    print(stmt)
+    return stmt
