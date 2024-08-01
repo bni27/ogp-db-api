@@ -243,7 +243,7 @@ def build_stage_statement(tables: list[str]):
     from_statement = f"""FROM ({duration_statement}) as a
     LEFT JOIN (SELECT d1.* FROM "reference"."gdp_deflators" as d1 INNER JOIN (SELECT max(year) as year FROM "reference"."gdp_deflators") as d2 on d1.year = d2.year) as h on (a.country_iso3 = h.country_code)"""
 
-    cost_columns: list[tuple[str, int]] = []
+    cost_columns: list[str] = []
     idx = 1
     new_column_statements = []
     new_columns = []
@@ -252,7 +252,7 @@ def build_stage_statement(tables: list[str]):
             col_stem = column.lower().removesuffix("_year").removesuffix("_currency").removesuffix("_millions").removesuffix("_local")
             if col_stem in cost_columns:
                 continue
-            cost_columns.append((col_stem, idx))
+            cost_columns.append(col_stem)
             idx += 1
             val_col = f"{col_stem}_local_millions"
             # cur_col = f"{col_stem}_local_currency"
