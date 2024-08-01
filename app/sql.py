@@ -71,7 +71,7 @@ def gen_col_str(
         primary_key = [primary_key]
     string_pieces = []
     for column in columns:
-        column_repr = " ".join(column)
+        column_repr = column.strip()
         column_repr += " NOT NULL" if column[0] in primary_key else ""
         string_pieces.append(column_repr)
     string_pieces.append(f"PRIMARY KEY ({', '.join(primary_key)})")
@@ -95,7 +95,7 @@ def create_table_statement(
     table_str = table_name if schema is None else f"{schema}.{table_name}"
     col_str = gen_col_str(columns=column_tuples(columns), primary_key=primary_key)
     statement = f"""CREATE TABLE IF NOT EXISTS {table_str}
-        ( {col_str} )
+        ({col_str})
         """
     print(statement)
     return statement

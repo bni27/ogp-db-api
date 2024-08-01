@@ -255,14 +255,14 @@ def build_stage_statement(tables: list[str]):
                 continue
             cost_columns.append((col_stem, idx))
             idx += 1
-            # val_col = f"{col_stem}_local_millions"
+            val_col = f"{col_stem}_local_millions"
             # cur_col = f"{col_stem}_local_currency"
             yr_col = f"{col_stem}_local_year"
             from_statement += f"""
             LEFT JOIN "reference"."exchange_rates" as e{idx} on (a.country_iso3 = e{idx}.country_code) and (a.{yr_col} = e{idx}.year)
             LEFT JOIN (SELECT * FROM "reference"."exchange_rates" WHERE country_code = 'USA') as f{idx} on a.{yr_col} = f{idx}.year
             LEFT JOIN "reference"."gdp_deflators" as g{idx} on (a.country_iso3 = g{idx}.country_code) and (a.{yr_col} = g{idx}.year)"""
-            new_column_statements.append(f"""a.{col_stem}_local_millions * f{idx}.exchange_rate * h.deflation_factor 
+            new_column_statements.append(f"""a.{val_col} * f{idx}.exchange_rate * h.deflation_factor 
             / e{idx}.exchange_rate  / g{idx}.deflation_factor as {col_stem}_norm_millions""")
             new_column_statements.append(f"'USD' as {col_stem}_norm_currency")
             new_column_statements.append(f"h.year as {col_stem}_norm_year")
