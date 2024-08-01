@@ -271,5 +271,5 @@ def build_stage_statement(tables: list[str]):
             new_columns.append(f"{col_stem}_norm_year")
     column_statements = columns2 + new_column_statements
     stmt = f"SELECT {', '.join(column_statements)} {from_statement}"
-    print(stmt)
+    print(stmt.replace("\n", " "))
     return stmt
