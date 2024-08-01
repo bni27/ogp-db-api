@@ -28,7 +28,7 @@ def stage_data(asset_class: str, verified: bool = False):
         f"{raw_schema(verified)}.{f.stem}"
         for f in get_data_files(asset_class, verified)
     ]
-    with get_cursor as cur:
+    with get_cursor() as cur:
         create_table_from_select(
             cur, asset_class, build_stage_statement(tables), stage_schema(verified)
         )
