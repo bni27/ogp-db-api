@@ -27,7 +27,8 @@ def stage_data(asset_class: str, verified: bool = False):
     tables = [f"{raw_schema(verified)}.{f.stem}" for f in get_data_files(asset_class, verified)]
     
     # build the statement to union the tables outright
-    return _select(build_stage_statement(tables))
+
+    return [r for r in _select(build_stage_statement(tables))]
 
 
 
