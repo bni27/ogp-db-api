@@ -11,7 +11,6 @@ from app.sql import (
     create_table_statement,
     drop_table_statement,
     duration_statements,
-    join_statement,
     select_statement,
     union_statement,
 )
@@ -270,6 +269,7 @@ def build_stage_statement(tables: list[str]):
             new_columns.append(f"{col_stem}_norm_currency")
             new_columns.append(f"{col_stem}_norm_year")
     column_statements = columns2 + new_column_statements
+    column_statements = set(column_statements)
     stmt = f"SELECT {', '.join(column_statements)} {from_statement}"
     print(stmt.replace("\n", " "))
     return stmt
