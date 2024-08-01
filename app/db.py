@@ -30,9 +30,10 @@ def stage_data(asset_class: str, verified: bool = False):
         for f in get_data_files(asset_class, verified)
     ]
     with get_cursor() as cur:
-        drop_table(cur, asset_class, stage_data(verified))
+        schema = stage_schema(verified)
+        drop_table(cur, asset_class, schema)
         create_table_from_select(
-            cur, asset_class, build_stage_statement(tables), stage_schema(verified)
+            cur, asset_class, build_stage_statement(tables), schema
         )
 
 
