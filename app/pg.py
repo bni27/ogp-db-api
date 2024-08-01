@@ -179,14 +179,14 @@ def build_year_date_statement(
     return_columns = []
     for col in columns:
         c = col.lower()
-        col_stem = c.strip("year")
+        col_stem = c.removesuffix("_year")
         return_columns.append(c)
         if c.endswith("_year") and f"{col_stem}_date" in columns:
             column_statements.append(case_if_year_and_date(col_stem))
         else:
             column_statements.append(col.lower())
         if col_stem.startswith("start_"):
-            col_middle = col_stem.strip("start_")
+            col_middle = col_stem.removeprefix("start_")
             if (n := f"act_{col_middle}_duration") not in columns:
                 column_statements.append(f"NULL as {n}")
                 return_columns.append(n)
@@ -215,7 +215,7 @@ def build_duration_statement(base_statement: str, columns: list[str]) -> tuple[s
     ]
     for column in columns:
         c = column.lower()
-        if c.startswith("start_") and (col_stem := c.strip("start_").strip("_year").strip("_date")) not in visited:
+        if c.startswith("start_") and (col_stem := c.removeprefix("start_").removesuffix("_year").removesuffix("_date")) not in visited:
             visited.append(col_stem)
             for col in [
                     f"start_{col_stem}_date",
@@ -250,7 +250,7 @@ def build_stage_statement(tables: list[str]):
     new_columns = []
     for column in columns2:
         if "_cost_local_" in column.lower():
-            col_stem = column.lower().strip("_year").strip("_currency").strip("_millions").strip("_local")
+            col_stem = column.lower().removesuffix("_year").removesuffix("_currency").removesuffix("_millions").removesuffix("_local")
             if col_stem in cost_columns:
                 continue
             cost_columns.append((col_stem, idx))

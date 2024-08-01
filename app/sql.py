@@ -72,7 +72,7 @@ def gen_col_str(
     string_pieces = []
     for column in columns:
         column_repr = " ".join(column)
-        column_repr += " NOT NULL" if column[0].strip() in primary_key else ""
+        column_repr += " NOT NULL" if column[0] in primary_key else ""
         string_pieces.append(column_repr)
     string_pieces.append(f"PRIMARY KEY ({', '.join(primary_key)})")
     return ", ".join(string_pieces)
