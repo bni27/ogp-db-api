@@ -78,7 +78,7 @@ def create_table_from_select(
 
 def load_data_from_file(file_path: Path, table_name: str):
     schema = f"raw_{file_path.parent.parent.stem}"
-    with open(file_path, "r") as f, get_cursor() as cur:
+    with open(file_path, "r", encoding='utf-8-sig') as f, get_cursor() as cur:
         drop_table(cur, table_name, schema)
         header_line = f.readline()
         headers = header_line.split(",")
