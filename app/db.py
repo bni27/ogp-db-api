@@ -4,10 +4,10 @@ from pathlib import Path
 from app.filesys import get_data_files
 from app.pg import (
     build_stage_statement,
+    create_table_from_select,
+    get_cursor,
     load_data_from_file,
-    _select,
     union_all_in_schema,
-    union_tables,
 )
 from app.sql import prod_table, raw_schema, stage_schema
 
@@ -24,14 +24,14 @@ def load_raw_data(file_path: Path):
 
 def stage_data(asset_class: str, verified: bool = False):
     # get all raw tables of the asset class
-    tables = [f"{raw_schema(verified)}.{f.stem}" for f in get_data_files(asset_class, verified)]
-    
-    # build the statement to union the tables outright
-
-    return [r for r in _select(build_stage_statement(tables))]
-
-
-
+    tables = [
+        f"{raw_schema(verified)}.{f.stem}"
+        for f in get_data_files(asset_class, verified)
+    ]
+    with get_cursor as cur:
+        create_table_from_select(
+            cur, asset_class, build_stage_statement(tables), stage_schema(verified)
+        )
 
 
 def union_prod(verified: bool = False):

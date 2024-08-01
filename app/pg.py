@@ -103,7 +103,7 @@ def _select(statement: str) -> Generator[dict[str, Any], None, None]:
         cur.execute(statement)
         rows = cur.fetchall()
         cols = cur.description
-        return ({c.name: row[i] for i, c in enumerate(cols)} for row in rows)
+        return [{c.name: row[i] for i, c in enumerate(cols)} for row in rows]
 
 
 def row_count(table_name: str, schema: str | None = None):
