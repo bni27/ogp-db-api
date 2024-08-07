@@ -29,7 +29,7 @@ app.include_router(
 
 @app.get("/favicon.ico", include_in_schema=False)
 async def get_favicon():
-    favicon_path = Path(__file__).parent / Path("favicon.jpg")
+    favicon_path = Path(__file__).parent / Path("app") / Path("favicon.jpg")
     return FileResponse(favicon_path)
 
 
