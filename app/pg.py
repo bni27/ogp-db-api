@@ -241,11 +241,15 @@ def build_stage_statement(tables: list[str]):
     unioned_asset_class, columns = build_union_statement(tables)
     duration_statement, columns2 = build_duration_statement(unioned_asset_class, columns)
     from_statement = f"""FROM ({duration_statement}) as a
-    LEFT JOIN (SELECT d1.* FROM "reference"."gdp_deflators" as d1 INNER JOIN (SELECT max(year) as year FROM "reference"."gdp_deflators") as d2 on d1.year = d2.year) as h on (a.country_iso3 = h.country_code)"""
+    LEFT JOIN (SELECT d1.* FROM "reference"."gdp_deflators" as d1 
+    INNER JOIN (
+      SELECT max(year) as year FROM "reference"."gdp_deflators") as d2 on d1.year = d2.year
+    ) as h on (a.country_iso3 = h.country_code)"""
 
     cost_columns: list[str] = []
-    idx = 1
-    new_column_statements = []
+    idx: int = 1
+    source_columns:list[str] = []
+    new_column_statements: list[str] = []
     new_columns = []
     for column in columns2:
         if "_cost_local_" in column.lower():
@@ -268,8 +272,15 @@ def build_stage_statement(tables: list[str]):
             new_columns.append(f"{col_stem}_norm_millions")
             new_columns.append(f"{col_stem}_norm_currency")
             new_columns.append(f"{col_stem}_norm_year")
-    column_statements = columns2 + new_column_statements
-    column_statements = set(column_statements)
+        if "source" in column.lower():
+            source_columns.append(column)
+    if len(source_columns) > 0:
+        new_columns.append("citations")
+        new_column_statements.append(
+            f"ARRAY_REMOVE(ARRAY[{', '.join(source_columns)}], null) AS citations"
+        )
+    
+    column_statements = set([c for c in columns2 if c not in source_columns] + new_column_statements)
     stmt = f"SELECT {', '.join(column_statements)} {from_statement}"
     print(stmt.replace("\n", " "))
     return stmt
