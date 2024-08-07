@@ -1,7 +1,8 @@
 import os
+from pathlib import Path
 
 from fastapi import Depends, FastAPI, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from psycopg2 import OperationalError
 import uvicorn
 
@@ -25,6 +26,11 @@ app.include_router(
 app.include_router(
     data.router, prefix="/api/v1/data", dependencies=[Depends(validate_api_key)]
 )
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def get_favicon():
+    favicon_path = Path(__file__).parent / Path("favicon.jpg")
+    return FileResponse(favicon_path)
 
 
 @app.get("/health", status_code=status.HTTP_200_OK)

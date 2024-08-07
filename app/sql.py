@@ -8,18 +8,23 @@ COLUMN_TYPE_NOTATION = {
     "INTEGER": {"suffixes": ["_year"], "prefixes": []},
     "BOOLEAN": {"suffixes": [], "prefixes": ["is_"]},
     "DATE": {"suffixes": ["_date"], "prefixes": []},
-    "FLOAT": {"suffixes": ["_millions", "_value", "_ratio", "_duration", "_thousands"], "prefixes": []},
+    "FLOAT": {
+        "suffixes": ["_millions", "_value", "_ratio", "_duration", "_thousands"],
+        "prefixes": [],
+    },
     "VARCHAR": {"suffixes": [""], "prefixes": []},
 }
 
 STANDARD_DAY = "-07-02"
 
-class AliasFactory():
+
+class AliasFactory:
     _aliases: Generator[str, None, None]
     _previous: str | None
+
     def __init__(self):
         self._aliases = (a for a in ascii_lowercase)
-    
+
     @property
     def value(self):
         try:
@@ -30,6 +35,7 @@ class AliasFactory():
 
 
 ALIASES = AliasFactory()
+
 
 def _verified_name(verified: bool = False) -> str:
     return "verified" if verified else "unverified"
@@ -136,7 +142,7 @@ def join_statement(
     else:
         alias_map[exp_1] = ALIASES.value
         f"({exp_1}) AS {alias_map[exp_1]}"
-    
+
     alias_map[exp_2] = ALIASES.value
     join_str += f" JOIN ({exp_2}) AS {alias_map[exp_2]} ON {on}"
     return join_str, alias_map
@@ -148,7 +154,9 @@ def case_if_year_and_date(column_stem: str) -> str:
     END AS {column_stem}_year"""
 
 
-def date_from_year(year_col: str, year_literal: int | None = None, _mm_dd: str = STANDARD_DAY) -> str:
+def date_from_year(
+    year_col: str, year_literal: int | None = None, _mm_dd: str = STANDARD_DAY
+) -> str:
     year = year_col if year_literal is None else f"'{year_literal}'"
     return f"date(concat({year}, '{_mm_dd}'))"
 
@@ -157,7 +165,7 @@ def duration_statements(col_stem: str) -> str:
     start_year = f"start_{col_stem}_year"
     start_date = f"start_{col_stem}_date"
     _duration_statements = []
-    for prefix in ["est", "act"]:    
+    for prefix in ["est", "act"]:
         end_date = f"{prefix}_completion_date"
         end_year = f"{prefix}_completion_year"
         duration_col = f"{prefix}_{col_stem}_duration"

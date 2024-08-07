@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, status, UploadFile
+from fastapi.responses import FileResponse
 
 from app.auth import AuthLevel, User, validate_api_key
 from app.db import load_raw_data, stage_data, union_prod
@@ -69,11 +70,22 @@ def upload_file(
         contents = file.file.read()
         with open(file_path, "wb") as f:
             f.write(contents)
-    except Exception:
+    except Exception as e:
+        logger.exception(e)
         return {"message": "There was an error uploading the file"}
     finally:
         file.file.close()
     return {"message": f"Successfully uploaded {file.filename}"}
+
+
+@router.get("/assetClasses/{asset_class}/files/{file_name}")
+def download_file(
+    asset_class: str,
+    file_name: str,
+    verified: bool = False,
+) -> FileResponse:
+    file_path = build_raw_file_path(file_name, asset_class, verified)
+    return FileResponse(file_path)
 
 
 @router.post("/assetClasses/{asset_class}/files/{file_name}/load")
