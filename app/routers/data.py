@@ -135,7 +135,7 @@ def update_record(
                     t.write(l)
             if not_yet_replaced:
                 t.write(",".join([data.get(h, "") for h in headers]))
-    file_path.replace(file_path)
+    temp_file.replace(file_path)
     try:
         table = load_raw_data(file_path)
     except Exception as e:
