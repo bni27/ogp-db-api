@@ -126,7 +126,6 @@ def update_record(
         with open(temp_file, 'w') as t:
             t.write(','.join(headers))
             for l in f.readlines():
-                t.write("\n")
                 row = l.split(',')
                 if (row[p_id_idx] == project_id) and (row[samp_idx] == sample):
                     t.write(",".join([data.get(h, row[i]) for i, h in enumerate(headers)]))
