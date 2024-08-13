@@ -102,6 +102,7 @@ def update_record(
     project_id = record.project_id
     sample = record.sample
     data = record.data
+    data.update({"sample": sample, "project_id": project_id})
     file_path = build_raw_file_path(file_name, asset_class, verified)
     p_id_idx: int | None = None
     samp_idx: int | None = None
