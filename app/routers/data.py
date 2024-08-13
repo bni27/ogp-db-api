@@ -106,7 +106,7 @@ def update_record(
     file_path = build_raw_file_path(file_name, asset_class, verified)
     p_id_idx: int | None = None
     samp_idx: int | None = None
-    with open(file_path, 'r') as f:
+    with open(file_path, 'r', encoding="utf-8-sig") as f:
         headers = [h.lower() for h in f.readline().split(',')]
         print(headers)
         for i, h in enumerate(headers):
