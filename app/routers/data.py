@@ -124,7 +124,7 @@ def update_record(
         print(temp_file)
         not_yet_replaced: bool = True
         with open(temp_file, 'w') as t:
-            t.write(headers.join(','))
+            t.write(','.join(headers))
             for l in f.readlines():
                 t.write("\n")
                 row = l.split(',')
