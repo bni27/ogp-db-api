@@ -112,7 +112,7 @@ def update_record(
                 p_id_idx = i
             if h == "sample":
                 samp_idx = i
-        if any(p_id_idx is None, samp_idx is None):
+        if any([p_id_idx is None, samp_idx is None]):
             return
         if not all(k.lower() in headers for k in data.keys()):
             return
