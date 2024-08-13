@@ -108,16 +108,20 @@ def update_record(
     samp_idx: int | None = None
     with open(file_path, 'r') as f:
         headers = [h.lower() for h in f.readline().split(',')]
+        print(headers)
         for i, h in enumerate(headers):
             if h == "project_id":
                 p_id_idx = i
             if h == "sample":
                 samp_idx = i
         if any([p_id_idx is None, samp_idx is None]):
-            return
+            print("Couldn't find project_id or sample columns.")
+            return "couldn't find ID columns"
         if not all(k.lower() in headers for k in data.keys()):
-            return
+            print("Extra headers specified")
+            return "Extra headers specified"
         temp_file = file_path.parent / Path(f"{file_path.stem}.tmp")
+        print(temp_file)
         not_yet_replaced: bool = True
         with open(temp_file, 'w') as t:
             t.write(headers.join(','))
@@ -131,7 +135,7 @@ def update_record(
                     t.write(l)
             if not_yet_replaced:
                 t.write(",".join([data.get(h, "") for h in headers]))
-    temp_file.replace(file_path)
+    file_path.replace(file_path)
     try:
         table = load_raw_data(file_path)
     except Exception as e:
