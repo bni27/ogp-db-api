@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse
 
 from app.auth import AuthLevel, User, validate_api_key
 from app.db import load_raw_data, stage_data, union_prod
-from app.pg import row_count, select_data
+from app.pg import Record, row_count, select_data
 from app.sql import prod_table, stage_schema
 from app.filesys import build_raw_file_path, get_data_files, get_directories
 
@@ -21,7 +21,7 @@ async def data(verified: bool = True):
 
 @router.post("/update", status_code=status.HTTP_204_NO_CONTENT)
 async def update(
-    verified: bool = False,
+    verified: bool = True,
     authenticated_user: User = Depends(validate_api_key),
 ):
     authenticated_user.check_privilege()
@@ -39,7 +39,7 @@ def get_asset_classes(verified: bool = True):
 @router.get("/assetClasses/{asset_class}/files")
 def get_asset_class_files(
     asset_class: str,
-    verified: bool = False,
+    verified: bool = True,
     authenticated_user: User = Depends(validate_api_key),
 ):
     authenticated_user.check_privilege()
@@ -55,7 +55,7 @@ def get_asset_class_files(
 def upload_file(
     asset_class: str,
     file: UploadFile = File(),
-    verified: bool = False,
+    verified: bool = True,
     overwrite: bool = False,
     authenticated_user: User = Depends(validate_api_key),
 ):
@@ -82,17 +82,71 @@ def upload_file(
 def download_file(
     asset_class: str,
     file_name: str,
-    verified: bool = False,
+    verified: bool = True,
+    authenticated_user: User = Depends(validate_api_key),
 ) -> FileResponse:
+    authenticated_user.check_privilege()
     file_path = build_raw_file_path(file_name, asset_class, verified)
     return FileResponse(file_path)
+
+
+@router.put("/assetClasses/{asset_class}/files/{file_name}/updateRecord")
+def update_record(
+    record: Record,
+    asset_class: str,
+    file_name: str,
+    verified: bool = True,
+    authenticated_user: User = Depends(validate_api_key),
+):
+    authenticated_user.check_privilege()
+    project_id = record.project_id
+    sample = record.sample
+    data = record.data
+    file_path = build_raw_file_path(file_name, asset_class, verified)
+    p_id_idx: int | None = None
+    samp_idx: int | None = None
+    with open(file_path, 'r') as f:
+        headers = [h.lower() for h in f.readline().split(',')]
+        for i, h in enumerate(headers):
+            if h == "project_id":
+                p_id_idx = i
+            if h == "sample":
+                samp_idx = i
+        if any(p_id_idx is None, samp_idx is None):
+            return
+        if not all(k.lower() in headers for k in data.keys()):
+            return
+        temp_file = file_path.parent / Path(f"{file_path.stem}.tmp")
+        not_yet_replaced: bool = True
+        with open(temp_file, 'w') as t:
+            t.write(headers.join(','))
+            for l in f.readlines():
+                t.write("\n")
+                row = l.split(',')
+                if (row[p_id_idx] == project_id) and (row[samp_idx] == sample):
+                    t.write(",".join([data.get(h, row[i]) for i, h in enumerate(headers)]))
+                    not_yet_replaced = False
+                else:
+                    t.write(l)
+            if not_yet_replaced:
+                t.write(",".join([data.get(h, "") for h in headers]))
+    temp_file.rename(file_path)
+    try:
+        table = load_raw_data(file_path)
+    except Exception as e:
+        logger.exception(e)
+        raise e
+    return {
+        "table_name": table,
+        "rows": row_count(table)[0],
+    }
 
 
 @router.post("/assetClasses/{asset_class}/files/{file_name}/load")
 def update_raw(
     asset_class: str,
     file_name: str,
-    verified: bool = False,
+    verified: bool = True,
     authenticated_user: User = Depends(validate_api_key),
 ):
     authenticated_user.check_privilege()
@@ -111,7 +165,7 @@ def update_raw(
 @router.post("/assetClasses/{asset_class}/stage/update")
 def update_stage(
     asset_class: str,
-    verified: bool = False,
+    verified: bool = True,
     authenticated_user: User = Depends(validate_api_key),
 ):
     authenticated_user.check_privilege()
@@ -121,7 +175,7 @@ def update_stage(
 @router.get("/assetClasses/{asset_class}/stage/data")
 def get_stage_data(
     asset_class: str,
-    verified: bool = False,
+    verified: bool = True,
     authenticated_user: User = Depends(validate_api_key),
 ):
     authenticated_user.check_privilege()

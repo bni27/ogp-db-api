@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Generator
 
 import psycopg2
+from pydantic import BaseModel
 
 from app.sql import (
     case_if_year_and_date,
@@ -31,12 +32,17 @@ POSTGRES_TYPES = {
 
 STANDARD_DAY = "-07-02"
 
-
 STAGE_JOINS: list[tuple[str, str]] = [
     ('"reference"."exchange_rates', ""),
     ('"reference"."gdp_deflators"', ""),
 ]
 
+
+class Record(BaseModel):
+    project_id: str
+    sample: str
+    data: dict[str, Any]
+    
 
 @contextmanager
 def get_cursor():
@@ -77,7 +83,7 @@ def create_table_from_select(
 
 def load_data_from_file(file_path: Path, table_name: str):
     schema = f"raw_{file_path.parent.parent.stem}"
-    with open(file_path, "r", encoding='utf-8-sig') as f, get_cursor() as cur:
+    with open(file_path, "r", encoding="utf-8-sig") as f, get_cursor() as cur:
         drop_table(cur, table_name, schema)
         header_line = f.readline()
         headers = header_line.split(",")
@@ -199,7 +205,9 @@ def build_year_date_statement(
     )
 
 
-def build_duration_statement(base_statement: str, columns: list[str]) -> tuple[str, list[str]]:
+def build_duration_statement(
+    base_statement: str, columns: list[str]
+) -> tuple[str, list[str]]:
     column_statements = []
     visited = []
     added_columns = [
@@ -214,21 +222,31 @@ def build_duration_statement(base_statement: str, columns: list[str]) -> tuple[s
     ]
     for column in columns:
         c = column.lower()
-        if c.startswith("start_") and (col_stem := c.removeprefix("start_").removesuffix("_year").removesuffix("_date")) not in visited:
+        if (
+            c.startswith("start_")
+            and (
+                col_stem := c.removeprefix("start_")
+                .removesuffix("_year")
+                .removesuffix("_date")
+            )
+            not in visited
+        ):
             visited.append(col_stem)
             for col in [
-                    f"start_{col_stem}_date",
-                    f"start_{col_stem}_year",
-                ]:
+                f"start_{col_stem}_date",
+                f"start_{col_stem}_year",
+            ]:
                 if col not in columns:
                     added_columns.append(col)
             column_statements.append(duration_statements(col_stem))
         else:
             column_statements.append(column)
-    
+
     if len(added_columns) > 0:
         add_statements = [f"NULL as {col}" for col in added_columns]
-        base_statement = f"SELECT *, {', '.join(add_statements)} FROM ({base_statement}) as y"
+        base_statement = (
+            f"SELECT *, {', '.join(add_statements)} FROM ({base_statement}) as y"
+        )
         columns.extend(added_columns)
         column_statements.extend(added_columns)
     return (
@@ -239,7 +257,9 @@ def build_duration_statement(base_statement: str, columns: list[str]) -> tuple[s
 
 def build_stage_statement(tables: list[str]):
     unioned_asset_class, columns = build_union_statement(tables)
-    duration_statement, columns2 = build_duration_statement(unioned_asset_class, columns)
+    duration_statement, columns2 = build_duration_statement(
+        unioned_asset_class, columns
+    )
     from_statement = f"""FROM ({duration_statement}) as a
     LEFT JOIN (SELECT d1.* FROM "reference"."gdp_deflators" as d1 
     INNER JOIN (
@@ -248,12 +268,18 @@ def build_stage_statement(tables: list[str]):
 
     cost_columns: list[str] = []
     idx: int = 1
-    source_columns:list[str] = []
+    source_columns: list[str] = []
     new_column_statements: list[str] = []
     new_columns = []
     for column in columns2:
         if "_cost_local_" in column.lower():
-            col_stem = column.lower().removesuffix("_year").removesuffix("_currency").removesuffix("_millions").removesuffix("_local")
+            col_stem = (
+                column.lower()
+                .removesuffix("_year")
+                .removesuffix("_currency")
+                .removesuffix("_millions")
+                .removesuffix("_local")
+            )
             if col_stem in cost_columns:
                 continue
             cost_columns.append(col_stem)
@@ -265,8 +291,10 @@ def build_stage_statement(tables: list[str]):
             LEFT JOIN "reference"."exchange_rates" as e{idx} on (a.country_iso3 = e{idx}.country_code) and (a.{yr_col} = e{idx}.year)
             LEFT JOIN (SELECT * FROM "reference"."exchange_rates" WHERE country_code = 'USA') as f{idx} on a.{yr_col} = f{idx}.year
             LEFT JOIN "reference"."gdp_deflators" as g{idx} on (a.country_iso3 = g{idx}.country_code) and (a.{yr_col} = g{idx}.year)"""
-            new_column_statements.append(f"""a.{val_col} * f{idx}.exchange_rate * h.deflation_factor 
-            / e{idx}.exchange_rate  / g{idx}.deflation_factor as {col_stem}_norm_millions""")
+            new_column_statements.append(
+                f"""a.{val_col} * f{idx}.exchange_rate * h.deflation_factor 
+            / e{idx}.exchange_rate  / g{idx}.deflation_factor as {col_stem}_norm_millions"""
+            )
             new_column_statements.append(f"'USD' as {col_stem}_norm_currency")
             new_column_statements.append(f"h.year as {col_stem}_norm_year")
             new_columns.append(f"{col_stem}_norm_millions")
@@ -279,8 +307,10 @@ def build_stage_statement(tables: list[str]):
         new_column_statements.append(
             f"ARRAY_REMOVE(ARRAY[{', '.join(source_columns)}], null) AS citations"
         )
-    
-    column_statements = set([c for c in columns2 if c not in source_columns] + new_column_statements)
+
+    column_statements = set(
+        [c for c in columns2 if c not in source_columns] + new_column_statements
+    )
     stmt = f"SELECT {', '.join(column_statements)} {from_statement}"
     print(stmt.replace("\n", " "))
     return stmt
