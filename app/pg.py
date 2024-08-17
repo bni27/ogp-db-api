@@ -1,13 +1,13 @@
 from contextlib import contextmanager
 import os
 from pathlib import Path
+import time
 from typing import Any, Generator
 
 import psycopg2
 from pydantic import BaseModel
 
 from app.sql import (
-    case_if_year_and_date,
     copy_statement,
     create_table_statement,
     drop_table_statement,
@@ -316,6 +316,7 @@ def build_stage_statement(tables: list[str]):
 
     stmt = f"SELECT {', '.join(column_statements)} {from_statement}"
     print(stmt.replace("\n", " "))
+    time.sleep(1)
     return stmt
 
 
