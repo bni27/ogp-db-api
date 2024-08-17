@@ -241,7 +241,7 @@ def build_duration_statement(
             f"SELECT *, {', '.join(add_statements)} FROM ({base_statement}) as y"
         )
         columns.extend(added_columns)
-        column_statements.extend(added_columns)
+        column_statements.extend([c for c in added_columns if not c.endswith("_duration")])
     return (
         f"SELECT {', '.join(column_statements)} FROM ({base_statement}) as b",
         columns,
