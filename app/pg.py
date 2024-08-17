@@ -44,9 +44,9 @@ COLUMN_ORDER = [
     {"name": "country_iso3"},
     # schedule columns
     {"stem_from": {"pre": "start_", "suf": "_date"}, "also": {"suf": "_year"}},
-    {"stem_from": {"pre": "est_",  "suf": "_date"}, "also": {"suf": "_year"}},
-    {"stem_from": {"pre": "act_",  "suf": "_date"}, "also": {"suf": "_year"}},
-    ["_duration", ""]
+    {"stem_from": {"pre": "est_", "suf": "_date"}, "also": {"suf": "_year"}},
+    {"stem_from": {"pre": "act_", "suf": "_date"}, "also": {"suf": "_year"}},
+    ["_duration", ""],
 ]
 
 STANDARD_DAY = "-07-02"
@@ -173,15 +173,17 @@ def union_tables(tables: list[str], target_table: str, target_schema: str):
 
 
 def build_union_statement(tables: list[str]) -> tuple[str, list[str]]:
-    columns = []
-    tables_columns = {}
+    columns: list[str] = []
+    tables_columns: dict[str, list[str]] = {}
     for table in tables:
-        print(table)
         tables_columns[table] = []
         for col in table_columns(table):
             tables_columns[table].append(col[0])
             if col[0] not in columns:
                 columns.append(col[0])
+    for col in columns:
+        if col.endswith("_date") and f"{col.removesuffix('_date')}_year" not in columns:
+            columns.append(f"{col.removesuffix('_date')}_year")
     union_headers = {
         table: [
             col if col in tables_columns[table] else f"NULL as {col}" for col in columns
@@ -239,15 +241,11 @@ def build_duration_statement(
     ]
     for column in columns:
         c = column.lower()
-        if (
-            c.startswith("start_")
-            and (
-                col_stem := c.removeprefix("start_")
-                .removesuffix("_year")
-                .removesuffix("_date")
+        if c.startswith("start_") and (c.endswith("_date") or c.endswith("_year")):
+            col_stem = (
+                c.removeprefix("start_").removesuffix("_year").removesuffix("_date")
             )
-            not in visited
-        ):
+            print(f"HERE IS A DURATION COLUMN STEM: {col_stem}")
             visited.append(col_stem)
             for col in [
                 f"start_{col_stem}_date",
