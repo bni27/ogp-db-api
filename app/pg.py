@@ -198,34 +198,6 @@ def build_union_statement(tables: list[str]) -> tuple[str, list[str]]:
     )
 
 
-def build_year_date_statement(
-    base_statement: str, columns: list[str]
-) -> tuple[str, list[str]]:
-    column_statements = []
-    return_columns = []
-    for col in columns:
-        c = col.lower()
-        col_stem = c.removesuffix("_year")
-        return_columns.append(c)
-        if c.endswith("_year") and f"{col_stem}_date" in columns:
-            column_statements.append(case_if_year_and_date(col_stem))
-        else:
-            column_statements.append(col.lower())
-        if col_stem.startswith("start_"):
-            col_middle = col_stem.removeprefix("start_")
-            if (n := f"act_{col_middle}_duration") not in columns:
-                column_statements.append(f"NULL as {n}")
-                return_columns.append(n)
-            if (n := f"est_{col_middle}_duration") not in columns:
-                column_statements.append(f"NULL as {n}")
-                return_columns.append(n)
-
-    return (
-        f"SELECT {', '.join(column_statements)} FROM ({base_statement})",
-        return_columns,
-    )
-
-
 def build_duration_statement(
     base_statement: str, columns: list[str]
 ) -> tuple[str, list[str]]:
@@ -252,6 +224,8 @@ def build_duration_statement(
                 f"start_{col_stem}_year",
                 f"est_{col_stem}_completion_date",
                 f"est_{col_stem}_completion_year",
+                f"est_{col_stem}_duration",
+                f"act_{col_stem}_duration",
             ]:
                 if col not in columns:
                     added_columns.append(col)
