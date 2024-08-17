@@ -217,6 +217,8 @@ def build_duration_statement(
             col_stem = (
                 c.removeprefix("start_").removesuffix("_year").removesuffix("_date")
             )
+            if col_stem in visited:
+                continue
             print(f"HERE IS A DURATION COLUMN STEM: {col_stem}")
             visited.append(col_stem)
             for col in [
@@ -228,6 +230,7 @@ def build_duration_statement(
                 f"act_{col_stem}_duration",
             ]:
                 if col not in columns:
+                    print(f"adding column: {col}")
                     added_columns.append(col)
             column_statements.append(duration_statements(col_stem))
         else:
