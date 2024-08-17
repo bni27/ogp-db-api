@@ -273,7 +273,7 @@ def build_stage_statement(tables: list[str]):
         col = column.lower()
         if col.endswith("_duration") and col.startswith("act_"):
             if (c_est := f"est_{col.removeprefix('act_')}") in columns:
-                col_stem = c_est.removesuffix("_duration")
+                col_stem = c_est.removeprefix("est_").removesuffix("_duration")
                 new_column_statements.append(
                     f"{col} / {c_est} AS schedule_{col_stem}_ratio"
                 )
