@@ -30,6 +30,25 @@ POSTGRES_TYPES = {
     16: "BOOLEAN",
 }
 
+COLUMN_ORDER = [
+    # primary keys
+    {"name": "project_id"},
+    {"name": "sample"},
+    # project name
+    {"name": "project_name"},
+    # project taxonomy
+    {"name": "asset_class"},
+    {"name": "project_type"},
+    {"name": "project_subtype"},
+    # country code
+    {"name": "country_iso3"},
+    # schedule columns
+    {"stem_from": {"pre": "start_", "suf": "_date"}, "also": {"suf": "_year"}},
+    {"stem_from": {"pre": "est_",  "suf": "_date"}, "also": {"suf": "_year"}},
+    {"stem_from": {"pre": "act_",  "suf": "_date"}, "also": {"suf": "_year"}},
+    ["_duration", ""]
+]
+
 STANDARD_DAY = "-07-02"
 
 STAGE_JOINS: list[tuple[str, str]] = [
@@ -42,7 +61,7 @@ class Record(BaseModel):
     project_id: str
     sample: str
     data: dict[str, Any]
-    
+
 
 @contextmanager
 def get_cursor():
@@ -208,13 +227,11 @@ def build_year_date_statement(
 def build_duration_statement(
     base_statement: str, columns: list[str]
 ) -> tuple[str, list[str]]:
-    column_statements = []
+    column_statements: list[str] = []
     visited = []
     added_columns = [
         c
         for c in [
-            "est_completion_date",
-            "est_completion_year",
             "act_completion_date",
             "act_completion_year",
         ]
@@ -235,6 +252,8 @@ def build_duration_statement(
             for col in [
                 f"start_{col_stem}_date",
                 f"start_{col_stem}_year",
+                f"est_{col_stem}_completion_date",
+                f"est_{col_stem}_completion_year",
             ]:
                 if col not in columns:
                     added_columns.append(col)
@@ -257,7 +276,7 @@ def build_duration_statement(
 
 def build_stage_statement(tables: list[str]):
     unioned_asset_class, columns = build_union_statement(tables)
-    duration_statement, columns2 = build_duration_statement(
+    duration_statement, columns = build_duration_statement(
         unioned_asset_class, columns
     )
     from_statement = f"""FROM ({duration_statement}) as a
@@ -271,11 +290,19 @@ def build_stage_statement(tables: list[str]):
     source_columns: list[str] = []
     new_column_statements: list[str] = []
     new_columns = []
-    for column in columns2:
-        if "_cost_local_" in column.lower():
+
+    for column in columns:
+        col = column.lower()
+        if col.endswith("_duration") and col.startswith("act_"):
+            if (c_est := f"est_{col.removeprefix('act_')}") in columns:
+                col_stem = c_est.removesuffix("_duration")
+                new_column_statements.append(
+                    f"{col} / {c_est} AS schedule_{col_stem}_ratio"
+                )
+                new_columns.append(f"schedule_{col_stem}_ratio")
+        if "_cost_local_" in col:
             col_stem = (
-                column.lower()
-                .removesuffix("_year")
+                col.removesuffix("_year")
                 .removesuffix("_currency")
                 .removesuffix("_millions")
                 .removesuffix("_local")
@@ -300,7 +327,7 @@ def build_stage_statement(tables: list[str]):
             new_columns.append(f"{col_stem}_norm_millions")
             new_columns.append(f"{col_stem}_norm_currency")
             new_columns.append(f"{col_stem}_norm_year")
-        if "source" in column.lower():
+        if "source" in col:
             source_columns.append(column)
     if len(source_columns) > 0:
         new_columns.append("citations")
@@ -309,8 +336,14 @@ def build_stage_statement(tables: list[str]):
         )
 
     column_statements = set(
-        [c for c in columns2 if c not in source_columns] + new_column_statements
+        [c for c in columns if c not in source_columns] + new_column_statements
     )
+
     stmt = f"SELECT {', '.join(column_statements)} {from_statement}"
     print(stmt.replace("\n", " "))
     return stmt
+
+
+def enforce_column_order(column_statements: list[str] | set[str]) -> list[str]:
+    output_column_statements: list[str] = []
+    pass

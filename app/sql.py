@@ -164,15 +164,28 @@ def date_from_year(
 def duration_statements(col_stem: str) -> str:
     start_year = f"start_{col_stem}_year"
     start_date = f"start_{col_stem}_date"
+    col_sets: list[dict[str, str]] = [
+        {
+            "date": f"est_{col_stem}_completion_date",
+            "year": f"est_{col_stem}_completion_year",
+            "dur": f"est_{col_stem}_duration",
+        },
+        {
+            "date": "act_completion_date",
+            "year": "act_completion_year",
+            "dur": f"act_{col_stem}_duration",
+        },
+    ]
     _duration_statements = []
-    for prefix in ["est", "act"]:
-        end_date = f"{prefix}_completion_date"
-        end_year = f"{prefix}_completion_year"
-        duration_col = f"{prefix}_{col_stem}_duration"
+    for col_set in col_sets:
+        end_date = col_set["date"]
+        end_year = col_set["year"]
+        duration_col = col_set["dur"]
         _duration_statements.append(
-            f"""CASE WHEN {duration_col} is NULL THEN 
-            ((CASE WHEN {end_date} is NULL THEN {date_from_year(end_year)} ELSE {end_date} END)
-            - (CASE WHEN {start_date} is NULL THEN {date_from_year(start_year)} ELSE {start_date} END))::FLOAT / 365        
+            f"""CASE WHEN {duration_col} is NULL THEN (
+            (CASE WHEN {end_date} is NULL THEN {date_from_year(end_year)} ELSE {end_date} END)
+            - (CASE WHEN {start_date} is NULL THEN {date_from_year(start_year)} ELSE {start_date} END)
+            )::FLOAT / 365
             ELSE {duration_col} END as {duration_col}"""
         )
     return ", ".join(_duration_statements)

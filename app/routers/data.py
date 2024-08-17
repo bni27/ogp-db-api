@@ -121,7 +121,6 @@ def update_record(
             print("Extra headers specified")
             return "Extra headers specified"
         temp_file = file_path.parent / Path(f"{file_path.stem}.tmp")
-        print(temp_file)
         not_yet_replaced: bool = True
         with open(temp_file, 'w') as t:
             t.write(','.join(headers))
@@ -134,9 +133,9 @@ def update_record(
                     t.write(l)
             if not_yet_replaced:
                 t.write(",".join([data.get(h, "") for h in headers]))
-    temp_file.replace(file_path)
     try:
-        table = load_raw_data(file_path)
+        table = load_raw_data(temp_file)
+        temp_file.replace(file_path)
     except Exception as e:
         logger.exception(e)
         raise e
