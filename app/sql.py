@@ -184,8 +184,8 @@ def duration_statements(col_stem: str) -> str:
         duration_col = col_set["dur"]
         _duration_statements.append(
             f"""CASE WHEN {duration_col} is NULL THEN (
-            (CASE WHEN {end_date} is NULL THEN {date_from_year(end_year)} ELSE {end_date} END)
-            - (CASE WHEN {start_date} is NULL THEN {date_from_year(start_year)} ELSE {start_date} END)
+            (CASE WHEN {end_date} is NULL THEN {date_from_year(end_year)} ELSE {end_date}::DATE END)
+            - (CASE WHEN {start_date} is NULL THEN {date_from_year(start_year)} ELSE {start_date}::DATE END)
             )::FLOAT / 365
             ELSE {duration_col}::FLOAT END as {duration_col}"""
         )
