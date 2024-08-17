@@ -233,6 +233,8 @@ def build_duration_statement(
                     print(f"adding column: {col}")
                     added_columns.append(col)
             column_statements.append(duration_statements(col_stem))
+            if not column.endswith("_duration"):
+                column_statements.append(column)
         else:
             column_statements.append(column)
     if len(added_columns) > 0:
