@@ -187,6 +187,6 @@ def duration_statements(col_stem: str) -> str:
             (CASE WHEN {end_date} is NULL THEN {date_from_year(end_year)} ELSE {end_date} END)
             - (CASE WHEN {start_date} is NULL THEN {date_from_year(start_year)} ELSE {start_date} END)
             )::FLOAT / 365
-            ELSE {duration_col} END as {duration_col}"""
+            ELSE {duration_col}::FLOAT END as {duration_col}"""
         )
     return ", ".join(_duration_statements)
