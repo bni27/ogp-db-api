@@ -235,7 +235,6 @@ def build_duration_statement(
             column_statements.append(duration_statements(col_stem))
         else:
             column_statements.append(column)
-
     if len(added_columns) > 0:
         add_statements = [f"NULL as {col}" for col in added_columns]
         base_statement = (

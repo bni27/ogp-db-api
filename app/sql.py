@@ -157,8 +157,9 @@ def case_if_year_and_date(column_stem: str) -> str:
 def date_from_year(
     year_col: str, year_literal: int | None = None, _mm_dd: str = STANDARD_DAY
 ) -> str:
-    year = year_col if year_literal is None else f"'{year_literal}'"
-    return f"date(concat({year}, '{_mm_dd}'))"
+    if year_literal is None:
+        return f"(CASE WHEN {year_col} is not NULL THEN date(concat({year_col}, '{_mm_dd}')) ELSE NULL END)"
+    return f"date(concat({year_literal}, '{_mm_dd}'))"
 
 
 def duration_statements(col_stem: str) -> str:
