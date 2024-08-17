@@ -251,6 +251,7 @@ def build_stage_statement(tables: list[str]):
     duration_statement, columns = build_duration_statement(
         unioned_asset_class, columns
     )
+    print(duration_statement)
     from_statement = f"""FROM ({duration_statement}) as a
     LEFT JOIN (SELECT d1.* FROM "reference"."gdp_deflators" as d1 
     INNER JOIN (
