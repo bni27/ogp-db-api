@@ -218,6 +218,7 @@ def build_duration_statement(
                 c.removeprefix("start_").removesuffix("_year").removesuffix("_date")
             )
             if col_stem in visited:
+                column_statements.append(column)
                 continue
             print(f"HERE IS A DURATION COLUMN STEM: {col_stem}")
             visited.append(col_stem)
