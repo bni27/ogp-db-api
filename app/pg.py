@@ -322,14 +322,15 @@ def build_stage_statement(tables: list[str]):
         new_column_statements.append(
             f"ARRAY_REMOVE(ARRAY[{', '.join(source_columns)}], null) AS citations"
         )
-
+    columns = [c for c in columns if c not in source_columns]
     column_statements = set(
-        [c for c in columns if c not in source_columns] + new_column_statements
+        columns + new_column_statements
     )
-
+    columns += new_columns
     stmt = f"SELECT {', '.join(column_statements)} {from_statement}"
-    print(stmt.replace("\n", " "))
-    return stmt
+    new_statement = f"SELECT {', '.join(columns)} FROM ({stmt}) as z"
+    print(new_statement.replace("\n", " "))
+    return new_statement
 
 
 def enforce_column_order(column_statements: list[str] | set[str]) -> list[str]:
