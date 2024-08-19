@@ -261,7 +261,7 @@ def build_stage_statement(tables: list[str]):
     LEFT JOIN (SELECT d1.* FROM "reference"."gdp_deflators" as d1 
     INNER JOIN (
       SELECT max(year) as year FROM "reference"."gdp_deflators") as d2 on d1.year = d2.year
-    ) as dd on (a.country_iso3 = d.country_code)"""
+    ) as d on (a.country_iso3 = d.country_code)"""
 
     cost_columns: list[str] = []
     idx: int = 1
