@@ -297,8 +297,8 @@ def build_stage_statement(tables: list[str]):
             LEFT JOIN (SELECT * FROM "reference"."exchange_rates" WHERE country_code = 'USA') as f{idx} on a.{yr_col} = f{idx}.year
             LEFT JOIN "reference"."gdp_deflators" as g{idx} on (a.country_iso3 = g{idx}.country_code) and (a.{yr_col} = g{idx}.year)
             LEFT JOIN (SELECT * FROM "reference"."gdp_deflators" WHERE country_code = 'USA') as h{idx} on (a.{yr_col} = h{idx}.year)
-            LEFT JOIN "referece"."ppp" as i{idx} on (a.country_iso3 = i{idx}.country_code) and (a.{yr_col} = i{idx}.year)
-            LEFT JOIN (SELECT * FROM "referece"."ppp" WHERE country_code = 'USA') as j{idx} on (a.{yr_col} = j{idx}.year)
+            LEFT JOIN "reference"."ppp" as i{idx} on (a.country_iso3 = i{idx}.country_code) and (a.{yr_col} = i{idx}.year)
+            LEFT JOIN (SELECT * FROM "reference"."ppp" WHERE country_code = 'USA') as j{idx} on (a.{yr_col} = j{idx}.year)
             """
             new_column_statements.append(
                 f"""a.{val_col} * f{idx}.exchange_rate * d.deflation_factor 
