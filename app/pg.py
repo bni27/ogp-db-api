@@ -244,7 +244,9 @@ def build_duration_statement(
             f"SELECT *, {', '.join(add_statements)} FROM ({base_statement}) as y"
         )
         columns.extend(added_columns)
-        column_statements.extend([c for c in added_columns if not c.endswith("_duration")])
+        column_statements.extend(
+            [c for c in added_columns if not c.endswith("_duration")]
+        )
     return (
         f"SELECT {', '.join(column_statements)} FROM ({base_statement}) as b",
         columns,
@@ -253,9 +255,7 @@ def build_duration_statement(
 
 def build_stage_statement(tables: list[str]):
     unioned_asset_class, columns = build_union_statement(tables)
-    duration_statement, columns = build_duration_statement(
-        unioned_asset_class, columns
-    )
+    duration_statement, columns = build_duration_statement(unioned_asset_class, columns)
     print(duration_statement)
     from_statement = f"""FROM ({duration_statement}) as a
     LEFT JOIN (SELECT d1.* FROM "reference"."gdp_deflators" as d1 
@@ -323,13 +323,27 @@ def build_stage_statement(tables: list[str]):
             f"ARRAY_REMOVE(ARRAY[{', '.join(source_columns)}], null) AS citations"
         )
     columns = [c for c in columns if c not in source_columns]
-    column_statements = set(
-        columns + new_column_statements
-    )
+    column_statements = set(columns + new_column_statements)
     columns += new_columns
     stmt = f"SELECT {', '.join(column_statements)} {from_statement}"
-    new_statement = f"SELECT {', '.join(columns)} FROM ({stmt}) as z"
-    print(new_statement.replace("\n", " "))
+    additional_statements = []
+    additional_columns = []
+    for col in columns:
+        if all(
+            [
+                "_cost_norm_" in col,
+                col.startswith("est_"),
+                col.endswith("_millions"),
+            ]
+        ):
+            if (act_col := f"act_{col.removeprefix('est_')}") in columns:
+                rat_col = f"{col.removeprefix('est_').removesuffix('_millions')}_ratio"
+                additional_statements.append(
+                    f"""{act_col} / {col} as {rat_col}"""
+                )
+                additional_columns.append(rat_col)
+    new_statement = f"SELECT {', '.join(columns + additional_statements)} FROM ({stmt}) as z"
+    columns += additional_columns
     return new_statement
 
 
