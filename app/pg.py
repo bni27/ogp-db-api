@@ -310,7 +310,7 @@ def build_stage_statement(tables: list[str]):
                 """
             )
             new_column_statements.append(f"'USD' as {col_stem}_norm_currency")
-            new_column_statements.append(f"h.year as {col_stem}_norm_year")
+            new_column_statements.append(f"d.year as {col_stem}_norm_year")
             new_columns.append(f"{col_stem}_norm_millions")
             new_columns.append(f"{col_stem}_norm_ppp_millions")
             new_columns.append(f"{col_stem}_norm_currency")
