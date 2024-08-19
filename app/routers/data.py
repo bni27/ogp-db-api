@@ -183,3 +183,8 @@ def get_stage_data(
 ):
     authenticated_user.check_privilege()
     return select_data(asset_class, schema=stage_schema(verified))
+
+
+@router.post("/reference/exchangeRates/update")
+def update_exchange_rate():
+    pass
