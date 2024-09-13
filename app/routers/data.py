@@ -154,6 +154,7 @@ def update_raw(
 ):
     authenticated_user.check_privilege()
     file_path = build_raw_file_path(file_name, asset_class, verified)
+    logger.info(f"Loading raw file: {file_path} into database.")
     try:
         table = load_raw_data(file_path)
     except Exception as e:
