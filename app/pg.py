@@ -1,7 +1,7 @@
 from contextlib import contextmanager
+import logging
 import os
 from pathlib import Path
-import time
 from typing import Any, Generator
 
 import psycopg2
@@ -16,6 +16,7 @@ from app.sql import (
     union_statement,
 )
 
+logger = logging.getLogger(__name__)
 
 DB_USER = os.environ.get("DB_USER")
 DB_PASS = os.environ.get("DB_PASS")
@@ -50,17 +51,21 @@ COLUMN_ORDER = [
 ]
 
 STANDARD_DAY = "-07-02"
-
-STAGE_JOINS: list[tuple[str, str]] = [
-    ('"reference"."exchange_rates', ""),
-    ('"reference"."gdp_deflators"', ""),
-]
+PRIMARY_KEYS = {"project_id", "sample"}
 
 
 class Record(BaseModel):
     project_id: str
     sample: str
     data: dict[str, Any]
+
+
+class DuplicateHeaderError(Exception):
+    pass
+
+
+class PrimaryKeysMissingError(Exception):
+    pass
 
 
 @contextmanager
@@ -78,7 +83,9 @@ def get_cursor():
 
 
 def drop_table(cur, table_name: str, schema: str = "raw"):
+    logger.info(f"Dropping table {schema}.{table_name}...")
     cur.execute(drop_table_statement(table_name, schema))
+    logger.info("Successfully dropped table.")
 
 
 def create_table_from_headers(
@@ -87,7 +94,17 @@ def create_table_from_headers(
     headers: list[str],
     schema: str | None = None,
 ):
-    cur.execute(create_table_statement(table_name, headers, schema))
+    logger.info(f"Creating table with headers: {', '.join(headers)}")
+    if len(headers) != len(set(headers)):
+        logger.error("Cannot create table. Duplicate headers found.")
+        raise DuplicateHeaderError
+    if any(pk not in headers for pk in PRIMARY_KEYS):
+        logger.error("Cannot create table. Required primary keys missing.")
+        raise PrimaryKeysMissingError
+    _stmt = create_table_statement(table_name, headers, schema)
+    logger.info(f"Executing statement: {_stmt}")
+    cur.execute(_stmt)
+    logger.info("Successfully created table.")
 
 
 def create_table_from_select(
@@ -338,11 +355,11 @@ def build_stage_statement(tables: list[str]):
         ):
             if (act_col := f"act_{col.removeprefix('est_')}") in columns:
                 rat_col = f"{col.removeprefix('est_').removesuffix('_millions')}_ratio"
-                additional_statements.append(
-                    f"""{act_col} / {col} as {rat_col}"""
-                )
+                additional_statements.append(f"{act_col} / {col} as {rat_col}")
                 additional_columns.append(rat_col)
-    new_statement = f"SELECT {', '.join(columns + additional_statements)} FROM ({stmt}) as z"
+    new_statement = (
+        f"SELECT {', '.join(columns + additional_statements)} FROM ({stmt}) as z"
+    )
     columns += additional_columns
     return new_statement
 

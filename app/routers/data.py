@@ -1,12 +1,13 @@
 import logging
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, status, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, status, UploadFile
 from fastapi.responses import FileResponse
 
 from app.auth import AuthLevel, User, validate_api_key
 from app.db import load_raw_data, stage_data, union_prod
 from app.pg import Record, row_count, select_data
+from app.pg import DuplicateHeaderError, PrimaryKeysMissingError
 from app.sql import prod_table, stage_schema
 from app.filesys import build_raw_file_path, get_data_files, get_directories
 
@@ -157,6 +158,16 @@ def update_raw(
     logger.info(f"Loading raw file: {file_path} into database.")
     try:
         table = load_raw_data(file_path)
+    except DuplicateHeaderError:
+        return HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Duplicate headers found. Please fix and re-upload the file."
+        )
+    except PrimaryKeysMissingError:
+        return HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Required primary keys missing. Make sure file has 'project_id' and 'sample' fields."
+        )
     except Exception as e:
         logger.exception(e)
         raise e
