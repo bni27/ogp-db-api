@@ -1,0 +1,253 @@
+name,alpha3_code,region_code,region_name,subregion_code,subregion_name,intermediate_region_code,intermediate_region_name,m49_code,continent,dev_least_developed,dev_landlocked,dev_sids,developing,currency_code
+Antarctica,ATA,,Antarctica,,Antarctica,,,10.0,Antarctica,False,False,False,False,
+Algeria,DZA,2.0,Africa,15.0,Northern Africa,,,12.0,Africa,False,False,False,True,DZD
+Egypt,EGY,2.0,Africa,15.0,Northern Africa,,,818.0,Africa,False,False,False,True,EGP
+Libya,LBY,2.0,Africa,15.0,Northern Africa,,,434.0,Africa,False,False,False,True,LYD
+Morocco,MAR,2.0,Africa,15.0,Northern Africa,,,504.0,Africa,False,False,False,True,MAD
+Sudan,SDN,2.0,Africa,15.0,Northern Africa,,,729.0,Africa,True,False,False,True,SDG
+Tunisia,TUN,2.0,Africa,15.0,Northern Africa,,,788.0,Africa,False,False,False,True,TND
+Western Sahara,ESH,2.0,Africa,15.0,Northern Africa,,,732.0,Africa,False,False,False,True,
+British Indian Ocean Territory,IOT,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,86.0,Africa,False,False,False,True,
+Burundi,BDI,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,108.0,Africa,True,True,False,True,BIF
+Comoros,COM,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,174.0,Africa,True,False,True,True,KMF
+Djibouti,DJI,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,262.0,Africa,True,False,False,True,DJF
+Eritrea,ERI,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,232.0,Africa,True,False,False,True,ETB
+Ethiopia,ETH,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,231.0,Africa,True,True,False,True,
+French Southern Territories,ATF,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,260.0,Africa,False,False,False,True,
+Kenya,KEN,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,404.0,Africa,False,False,False,True,KES
+Madagascar,MDG,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,450.0,Africa,True,False,False,True,MGA
+Malawi,MWI,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,454.0,Africa,True,True,False,True,MWK
+Mauritius,MUS,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,480.0,Africa,False,False,True,True,MUR
+Mayotte,MYT,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,175.0,Africa,False,False,False,True,
+Mozambique,MOZ,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,508.0,Africa,True,False,False,True,MZN
+Réunion,REU,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,638.0,Africa,False,False,False,True,
+Rwanda,RWA,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,646.0,Africa,True,True,False,True,RWF
+Seychelles,SYC,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,690.0,Africa,False,False,True,True,SCR
+Somalia,SOM,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,706.0,Africa,True,False,False,True,SOS
+South Sudan,SSD,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,728.0,Africa,True,True,False,True,SSP
+Uganda,UGA,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,800.0,Africa,True,True,False,True,UGX
+Tanzania,TZA,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,834.0,Africa,True,False,False,True,TZS
+Zambia,ZMB,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,894.0,Africa,True,True,False,True,ZMK
+Zimbabwe,ZWE,2.0,Africa,202.0,Sub-Saharan Africa,14.0,Eastern Africa,716.0,Africa,False,True,False,True,ZWD
+Angola,AGO,2.0,Africa,202.0,Sub-Saharan Africa,17.0,Middle Africa,24.0,Africa,True,False,False,True,AOA
+Cameroon,CMR,2.0,Africa,202.0,Sub-Saharan Africa,17.0,Middle Africa,120.0,Africa,False,False,False,True,
+Central African Republic,CAF,2.0,Africa,202.0,Sub-Saharan Africa,17.0,Middle Africa,140.0,Africa,True,True,False,True,XAF
+Chad,TCD,2.0,Africa,202.0,Sub-Saharan Africa,17.0,Middle Africa,148.0,Africa,True,True,False,True,
+Congo,COG,2.0,Africa,202.0,Sub-Saharan Africa,17.0,Middle Africa,178.0,Africa,False,False,False,True,
+Democratic Republic of the Congo,COD,2.0,Africa,202.0,Sub-Saharan Africa,17.0,Middle Africa,180.0,Africa,True,False,False,True,CDF
+Equatorial Guinea,GNQ,2.0,Africa,202.0,Sub-Saharan Africa,17.0,Middle Africa,226.0,Africa,False,False,False,True,
+Gabon,GAB,2.0,Africa,202.0,Sub-Saharan Africa,17.0,Middle Africa,266.0,Africa,False,False,False,True,
+Sao Tome and Principe,STP,2.0,Africa,202.0,Sub-Saharan Africa,17.0,Middle Africa,678.0,Africa,True,False,True,True,STD
+Botswana,BWA,2.0,Africa,202.0,Sub-Saharan Africa,18.0,Southern Africa,72.0,Africa,False,True,False,True,BWP
+Eswatini,SWZ,2.0,Africa,202.0,Sub-Saharan Africa,18.0,Southern Africa,748.0,Africa,False,True,False,True,SZL
+Lesotho,LSO,2.0,Africa,202.0,Sub-Saharan Africa,18.0,Southern Africa,426.0,Africa,True,True,False,True,LSL
+Namibia,NAM,2.0,Africa,202.0,Sub-Saharan Africa,18.0,Southern Africa,516.0,Africa,False,False,False,True,NAD
+South Africa,ZAF,2.0,Africa,202.0,Sub-Saharan Africa,18.0,Southern Africa,710.0,Africa,False,False,False,True,ZAR
+Benin,BEN,2.0,Africa,202.0,Sub-Saharan Africa,11.0,Western Africa,204.0,Africa,True,False,False,True,XOF
+Burkina Faso,BFA,2.0,Africa,202.0,Sub-Saharan Africa,11.0,Western Africa,854.0,Africa,True,True,False,True,
+Cabo Verde,CPV,2.0,Africa,202.0,Sub-Saharan Africa,11.0,Western Africa,132.0,Africa,False,False,True,True,CVE
+Côte d’Ivoire,CIV,2.0,Africa,202.0,Sub-Saharan Africa,11.0,Western Africa,384.0,Africa,False,False,False,True,
+Gambia,GMB,2.0,Africa,202.0,Sub-Saharan Africa,11.0,Western Africa,270.0,Africa,True,False,False,True,GMD
+Ghana,GHA,2.0,Africa,202.0,Sub-Saharan Africa,11.0,Western Africa,288.0,Africa,False,False,False,True,GHS
+Guinea,GIN,2.0,Africa,202.0,Sub-Saharan Africa,11.0,Western Africa,324.0,Africa,True,False,False,True,GNF
+Guinea-Bissau,GNB,2.0,Africa,202.0,Sub-Saharan Africa,11.0,Western Africa,624.0,Africa,True,False,True,True,
+Liberia,LBR,2.0,Africa,202.0,Sub-Saharan Africa,11.0,Western Africa,430.0,Africa,True,False,False,True,LRD
+Mali,MLI,2.0,Africa,202.0,Sub-Saharan Africa,11.0,Western Africa,466.0,Africa,True,True,False,True,
+Mauritania,MRT,2.0,Africa,202.0,Sub-Saharan Africa,11.0,Western Africa,478.0,Africa,True,False,False,True,MRO
+Niger,NER,2.0,Africa,202.0,Sub-Saharan Africa,11.0,Western Africa,562.0,Africa,True,True,False,True,
+Nigeria,NGA,2.0,Africa,202.0,Sub-Saharan Africa,11.0,Western Africa,566.0,Africa,False,False,False,True,NGN
+Saint Helena,SHN,2.0,Africa,202.0,Sub-Saharan Africa,11.0,Western Africa,654.0,Africa,False,False,False,True,
+Senegal,SEN,2.0,Africa,202.0,Sub-Saharan Africa,11.0,Western Africa,686.0,Africa,True,False,False,True,
+Sierra Leone,SLE,2.0,Africa,202.0,Sub-Saharan Africa,11.0,Western Africa,694.0,Africa,True,False,False,True,SLL
+Togo,TGO,2.0,Africa,202.0,Sub-Saharan Africa,11.0,Western Africa,768.0,Africa,True,False,False,True,
+Anguilla,AIA,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,660.0,South America,False,False,True,True,
+Antigua and Barbuda,ATG,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,28.0,South America,False,False,True,True,XCD
+Aruba,ABW,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,533.0,South America,False,False,True,True,ANG
+Bahamas,BHS,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,44.0,South America,False,False,True,True,BSD
+Barbados,BRB,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,52.0,South America,False,False,True,True,BBD
+"Bonaire, Sint Eustatius and Saba",BES,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,535.0,South America,False,False,True,True,
+British Virgin Islands,VGB,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,92.0,South America,False,False,True,True,
+Cayman Islands,CYM,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,136.0,South America,False,False,False,True,KYD
+Cuba,CUB,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,192.0,South America,False,False,True,True,CUP
+Curaçao,CUW,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,531.0,South America,False,False,True,True,
+Dominica,DMA,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,212.0,South America,False,False,True,True,
+Dominican Republic,DOM,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,214.0,South America,False,False,True,True,DOP
+Grenada,GRD,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,308.0,South America,False,False,True,True,
+Guadeloupe,GLP,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,312.0,South America,False,False,False,True,
+Haiti,HTI,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,332.0,South America,True,False,True,True,HTG
+Jamaica,JAM,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,388.0,South America,False,False,True,True,JMD
+Martinique,MTQ,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,474.0,South America,False,False,False,True,
+Montserrat,MSR,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,500.0,South America,False,False,True,True,
+Puerto Rico,PRI,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,630.0,South America,False,False,True,True,
+Saint Barthélemy,BLM,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,652.0,South America,False,False,False,True,
+Saint Kitts and Nevis,KNA,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,659.0,South America,False,False,True,True,
+Saint Lucia,LCA,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,662.0,South America,False,False,True,True,
+Saint Martin (French Part),MAF,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,663.0,South America,False,False,False,True,
+Saint Vincent and the Grenadines,VCT,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,670.0,South America,False,False,True,True,
+Sint Maarten (Dutch part),SXM,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,534.0,South America,False,False,True,True,
+Trinidad and Tobago,TTO,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,780.0,South America,False,False,True,True,TTD
+Turks and Caicos Islands,TCA,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,796.0,South America,False,False,False,True,
+United States Virgin Islands,VIR,19.0,Americas,419.0,Latin America and the Caribbean,29.0,Caribbean,850.0,South America,False,False,True,True,
+Belize,BLZ,19.0,Americas,419.0,Latin America and the Caribbean,13.0,Central America,84.0,South America,False,False,True,True,BZD
+Costa Rica,CRI,19.0,Americas,419.0,Latin America and the Caribbean,13.0,Central America,188.0,South America,False,False,False,True,CRC
+El Salvador,SLV,19.0,Americas,419.0,Latin America and the Caribbean,13.0,Central America,222.0,South America,False,False,False,True,SVC
+Guatemala,GTM,19.0,Americas,419.0,Latin America and the Caribbean,13.0,Central America,320.0,South America,False,False,False,True,GTQ
+Honduras,HND,19.0,Americas,419.0,Latin America and the Caribbean,13.0,Central America,340.0,South America,False,False,False,True,HNL
+Mexico,MEX,19.0,Americas,419.0,Latin America and the Caribbean,13.0,Central America,484.0,South America,False,False,False,True,MXN
+Nicaragua,NIC,19.0,Americas,419.0,Latin America and the Caribbean,13.0,Central America,558.0,South America,False,False,False,True,NIO
+Panama,PAN,19.0,Americas,419.0,Latin America and the Caribbean,13.0,Central America,591.0,South America,False,False,False,True,PAB
+Argentina,ARG,19.0,Americas,419.0,Latin America and the Caribbean,5.0,South America,32.0,South America,False,False,False,True,ARS
+Bolivia,BOL,19.0,Americas,419.0,Latin America and the Caribbean,5.0,South America,68.0,South America,False,True,False,True,BOB
+Bouvet Island,BVT,19.0,Americas,419.0,Latin America and the Caribbean,5.0,South America,74.0,South America,False,False,False,True,
+Brazil,BRA,19.0,Americas,419.0,Latin America and the Caribbean,5.0,South America,76.0,South America,False,False,False,True,BRL
+Chile,CHL,19.0,Americas,419.0,Latin America and the Caribbean,5.0,South America,152.0,South America,False,False,False,True,CLP
+Colombia,COL,19.0,Americas,419.0,Latin America and the Caribbean,5.0,South America,170.0,South America,False,False,False,True,COP
+Ecuador,ECU,19.0,Americas,419.0,Latin America and the Caribbean,5.0,South America,218.0,South America,False,False,False,True,ECS
+Falkland Islands (Malvinas),FLK,19.0,Americas,419.0,Latin America and the Caribbean,5.0,South America,238.0,South America,False,False,False,True,
+French Guiana,GUF,19.0,Americas,419.0,Latin America and the Caribbean,5.0,South America,254.0,South America,False,False,False,True,
+Guyana,GUY,19.0,Americas,419.0,Latin America and the Caribbean,5.0,South America,328.0,South America,False,False,True,True,GYD
+Paraguay,PRY,19.0,Americas,419.0,Latin America and the Caribbean,5.0,South America,600.0,South America,False,True,False,True,PYG
+Peru,PER,19.0,Americas,419.0,Latin America and the Caribbean,5.0,South America,604.0,South America,False,False,False,True,PEN
+South Georgia and the South Sandwich Islands,SGS,19.0,Americas,419.0,Latin America and the Caribbean,5.0,South America,239.0,South America,False,False,False,True,
+Suriname,SUR,19.0,Americas,419.0,Latin America and the Caribbean,5.0,South America,740.0,South America,False,False,True,True,SRD
+Uruguay,URY,19.0,Americas,419.0,Latin America and the Caribbean,5.0,South America,858.0,South America,False,False,False,True,UYU
+Venezuela,VEN,19.0,Americas,419.0,Latin America and the Caribbean,5.0,South America,862.0,South America,False,False,False,True,VEF
+Bermuda,BMU,19.0,Americas,21.0,Northern America,,,60.0,North America,False,False,False,False,BMD
+Canada,CAN,19.0,Americas,21.0,Northern America,,,124.0,North America,False,False,False,False,CAD
+Greenland,GRL,19.0,Americas,21.0,Northern America,,,304.0,North America,False,False,False,False,
+Saint Pierre and Miquelon,SPM,19.0,Americas,21.0,Northern America,,,666.0,North America,False,False,False,False,
+United States of America,USA,19.0,Americas,21.0,Northern America,,,840.0,North America,False,False,False,False,USD
+Kazakhstan,KAZ,142.0,Asia,143.0,Central Asia,,,398.0,Asia,False,True,False,True,KZT
+Kyrgyzstan,KGZ,142.0,Asia,143.0,Central Asia,,,417.0,Asia,False,True,False,True,KGS
+Tajikistan,TJK,142.0,Asia,143.0,Central Asia,,,762.0,Asia,False,True,False,True,TJS
+Turkmenistan,TKM,142.0,Asia,143.0,Central Asia,,,795.0,Asia,False,True,False,True,TMT
+Uzbekistan,UZB,142.0,Asia,143.0,Central Asia,,,860.0,Asia,False,True,False,True,UZS
+China,CHN,142.0,Asia,30.0,Eastern Asia,,,156.0,Asia,False,False,False,True,CNY
+Hong Kong,HKG,142.0,Asia,30.0,Eastern Asia,,,344.0,Asia,False,False,False,True,HKD
+"China, Macao Special Administrative Region",MAC,142.0,Asia,30.0,Eastern Asia,,,446.0,Asia,False,False,False,True,MOP
+North Korea,PRK,142.0,Asia,30.0,Eastern Asia,,,408.0,Asia,False,False,False,True,KPW
+Japan,JPN,142.0,Asia,30.0,Eastern Asia,,,392.0,Asia,False,False,False,False,JPY
+Mongolia,MNG,142.0,Asia,30.0,Eastern Asia,,,496.0,Asia,False,True,False,True,MNT
+South Korea,KOR,142.0,Asia,30.0,Eastern Asia,,,410.0,Asia,False,False,False,True,KRW
+Brunei Darussalam,BRN,142.0,Asia,35.0,South-eastern Asia,,,96.0,Asia,False,False,False,True,BND
+Cambodia,KHM,142.0,Asia,35.0,South-eastern Asia,,,116.0,Asia,True,False,False,True,KHR
+Indonesia,IDN,142.0,Asia,35.0,South-eastern Asia,,,360.0,Asia,False,False,False,True,IDR
+Laos,LAO,142.0,Asia,35.0,South-eastern Asia,,,418.0,Asia,True,True,False,True,LAK
+Malaysia,MYS,142.0,Asia,35.0,South-eastern Asia,,,458.0,Asia,False,False,False,True,MYR
+Myanmar,MMR,142.0,Asia,35.0,South-eastern Asia,,,104.0,Asia,True,False,False,True,MMK
+Philippines,PHL,142.0,Asia,35.0,South-eastern Asia,,,608.0,Asia,False,False,False,True,PHP
+Singapore,SGP,142.0,Asia,35.0,South-eastern Asia,,,702.0,Asia,False,False,True,True,SGD
+Thailand,THA,142.0,Asia,35.0,South-eastern Asia,,,764.0,Asia,False,False,False,True,THB
+Timor-Leste,TLS,142.0,Asia,35.0,South-eastern Asia,,,626.0,Asia,True,False,True,True,
+Vietnam,VNM,142.0,Asia,35.0,South-eastern Asia,,,704.0,Asia,False,False,False,True,VND
+Afghanistan,AFG,142.0,Asia,34.0,Southern Asia,,,4.0,Asia,True,True,False,True,AFN
+Bangladesh,BGD,142.0,Asia,34.0,Southern Asia,,,50.0,Asia,True,False,False,True,BDT
+Bhutan,BTN,142.0,Asia,34.0,Southern Asia,,,64.0,Asia,True,True,False,True,INR
+India,IND,142.0,Asia,34.0,Southern Asia,,,356.0,Asia,False,False,False,True,
+Iran,IRN,142.0,Asia,34.0,Southern Asia,,,364.0,Asia,False,False,False,True,IRR
+Maldives,MDV,142.0,Asia,34.0,Southern Asia,,,462.0,Asia,False,False,True,True,MVR
+Nepal,NPL,142.0,Asia,34.0,Southern Asia,,,524.0,Asia,True,True,False,True,NPR
+Pakistan,PAK,142.0,Asia,34.0,Southern Asia,,,586.0,Asia,False,False,False,True,PKR
+Sri Lanka,LKA,142.0,Asia,34.0,Southern Asia,,,144.0,Asia,False,False,False,True,LKR
+Armenia,ARM,142.0,Asia,145.0,Western Asia,,,51.0,Asia,False,True,False,True,AMD
+Azerbaijan,AZE,142.0,Asia,145.0,Western Asia,,,31.0,Asia,False,True,False,True,AZN
+Bahrain,BHR,142.0,Asia,145.0,Western Asia,,,48.0,Asia,False,False,False,True,BHD
+Cyprus,CYP,142.0,Asia,145.0,Western Asia,,,196.0,Asia,False,False,False,False,
+Georgia,GEO,142.0,Asia,145.0,Western Asia,,,268.0,Asia,False,False,False,True,GEL
+Iraq,IRQ,142.0,Asia,145.0,Western Asia,,,368.0,Asia,False,False,False,True,IQD
+Israel,ISR,142.0,Asia,145.0,Western Asia,,,376.0,Asia,False,False,False,False,ILS
+Jordan,JOR,142.0,Asia,145.0,Western Asia,,,400.0,Asia,False,False,False,True,JOD
+Kuwait,KWT,142.0,Asia,145.0,Western Asia,,,414.0,Asia,False,False,False,True,KWD
+Lebanon,LBN,142.0,Asia,145.0,Western Asia,,,422.0,Asia,False,False,False,True,LBP
+Oman,OMN,142.0,Asia,145.0,Western Asia,,,512.0,Asia,False,False,False,True,OMR
+Qatar,QAT,142.0,Asia,145.0,Western Asia,,,634.0,Asia,False,False,False,True,QAR
+Saudi Arabia,SAU,142.0,Asia,145.0,Western Asia,,,682.0,Asia,False,False,False,True,SAR
+State of Palestine,PSE,142.0,Asia,145.0,Western Asia,,,275.0,Asia,False,False,False,True,
+Syrian Arab Republic,SYR,142.0,Asia,145.0,Western Asia,,,760.0,Asia,False,False,False,True,SYP
+Turkey,TUR,142.0,Asia,145.0,Western Asia,,,792.0,Asia,False,False,False,True,TRY
+United Arab Emirates,ARE,142.0,Asia,145.0,Western Asia,,,784.0,Asia,False,False,False,True,AED
+Yemen,YEM,142.0,Asia,145.0,Western Asia,,,887.0,Asia,True,False,False,True,YER
+Belarus,BLR,150.0,Europe,151.0,Eastern Europe,,,112.0,Europe,False,False,False,False,BYR
+Bulgaria,BGR,150.0,Europe,151.0,Eastern Europe,,,100.0,Europe,False,False,False,False,BGN
+Czechia,CZE,150.0,Europe,151.0,Eastern Europe,,,203.0,Europe,False,False,False,False,CZK
+Hungary,HUN,150.0,Europe,151.0,Eastern Europe,,,348.0,Europe,False,False,False,False,HUF
+Poland,POL,150.0,Europe,151.0,Eastern Europe,,,616.0,Europe,False,False,False,False,PLN
+Republic of Moldova,MDA,150.0,Europe,151.0,Eastern Europe,,,498.0,Europe,False,True,False,False,MDL
+Romania,ROU,150.0,Europe,151.0,Eastern Europe,,,642.0,Europe,False,False,False,False,RON
+Russian Federation,RUS,150.0,Europe,151.0,Eastern Europe,,,643.0,Europe,False,False,False,False,RUB
+Slovakia,SVK,150.0,Europe,151.0,Eastern Europe,,,703.0,Europe,False,False,False,False,
+Ukraine,UKR,150.0,Europe,151.0,Eastern Europe,,,804.0,Europe,False,False,False,False,UAH
+Åland Islands,ALA,150.0,Europe,154.0,Northern Europe,,,248.0,Europe,False,False,False,False,
+Guernsey,GGY,150.0,Europe,154.0,Northern Europe,830.0,Channel Islands,831.0,Europe,False,False,False,False,
+Jersey,JEY,150.0,Europe,154.0,Northern Europe,830.0,Channel Islands,832.0,Europe,False,False,False,False,
+Sark,SRK,150.0,Europe,154.0,Northern Europe,830.0,Channel Islands,680.0,Europe,False,False,False,False,
+Denmark,DNK,150.0,Europe,154.0,Northern Europe,,,208.0,Europe,False,False,False,False,DKK
+Estonia,EST,150.0,Europe,154.0,Northern Europe,,,233.0,Europe,False,False,False,False,
+Faroe Islands,FRO,150.0,Europe,154.0,Northern Europe,,,234.0,Europe,False,False,False,False,
+Finland,FIN,150.0,Europe,154.0,Northern Europe,,,246.0,Europe,False,False,False,False,
+Iceland,ISL,150.0,Europe,154.0,Northern Europe,,,352.0,Europe,False,False,False,False,ISK
+Ireland,IRL,150.0,Europe,154.0,Northern Europe,,,372.0,Europe,False,False,False,False,
+Isle of Man,IMN,150.0,Europe,154.0,Northern Europe,,,833.0,Europe,False,False,False,False,
+Latvia,LVA,150.0,Europe,154.0,Northern Europe,,,428.0,Europe,False,False,False,False,
+Lithuania,LTU,150.0,Europe,154.0,Northern Europe,,,440.0,Europe,False,False,False,False,
+Norway,NOR,150.0,Europe,154.0,Northern Europe,,,578.0,Europe,False,False,False,False,NOK
+Svalbard and Jan Mayen Islands,SJM,150.0,Europe,154.0,Northern Europe,,,744.0,Europe,False,False,False,False,
+Sweden,SWE,150.0,Europe,154.0,Northern Europe,,,752.0,Europe,False,False,False,False,SEK
+United Kingdom,GBR,150.0,Europe,154.0,Northern Europe,,,826.0,Europe,False,False,False,False,GBP
+Albania,ALB,150.0,Europe,39.0,Southern Europe,,,8.0,Europe,False,False,False,False,ALL
+Andorra,AND,150.0,Europe,39.0,Southern Europe,,,20.0,Europe,False,False,False,False,
+Bosnia and Herzegovina,BIH,150.0,Europe,39.0,Southern Europe,,,70.0,Europe,False,False,False,False,BAM
+Croatia,HRV,150.0,Europe,39.0,Southern Europe,,,191.0,Europe,False,False,False,False,HRK
+Gibraltar,GIB,150.0,Europe,39.0,Southern Europe,,,292.0,Europe,False,False,False,False,GIP
+Greece,GRC,150.0,Europe,39.0,Southern Europe,,,300.0,Europe,False,False,False,False,
+Holy See,VAT,150.0,Europe,39.0,Southern Europe,,,336.0,Europe,False,False,False,False,
+Italy,ITA,150.0,Europe,39.0,Southern Europe,,,380.0,Europe,False,False,False,False,
+Malta,MLT,150.0,Europe,39.0,Southern Europe,,,470.0,Europe,False,False,False,False,MTL
+Montenegro,MNE,150.0,Europe,39.0,Southern Europe,,,499.0,Europe,False,False,False,False,
+North Macedonia,MKD,150.0,Europe,39.0,Southern Europe,,,807.0,Europe,False,True,False,False,MKD
+Portugal,PRT,150.0,Europe,39.0,Southern Europe,,,620.0,Europe,False,False,False,False,
+San Marino,SMR,150.0,Europe,39.0,Southern Europe,,,674.0,Europe,False,False,False,False,
+Serbia,SRB,150.0,Europe,39.0,Southern Europe,,,688.0,Europe,False,False,False,False,RSD
+Slovenia,SVN,150.0,Europe,39.0,Southern Europe,,,705.0,Europe,False,False,False,False,
+Spain,ESP,150.0,Europe,39.0,Southern Europe,,,724.0,Europe,False,False,False,False,
+Austria,AUT,150.0,Europe,155.0,Western Europe,,,40.0,Europe,False,False,False,False,
+Belgium,BEL,150.0,Europe,155.0,Western Europe,,,56.0,Europe,False,False,False,False,
+France,FRA,150.0,Europe,155.0,Western Europe,,,250.0,Europe,False,False,False,False,
+Germany,DEU,150.0,Europe,155.0,Western Europe,,,276.0,Europe,False,False,False,False,
+Liechtenstein,LIE,150.0,Europe,155.0,Western Europe,,,438.0,Europe,False,False,False,False,
+Luxembourg,LUX,150.0,Europe,155.0,Western Europe,,,442.0,Europe,False,False,False,False,
+Monaco,MCO,150.0,Europe,155.0,Western Europe,,,492.0,Europe,False,False,False,False,
+Netherlands,NLD,150.0,Europe,155.0,Western Europe,,,528.0,Europe,False,False,False,False,
+Switzerland,CHE,150.0,Europe,155.0,Western Europe,,,756.0,Europe,False,False,False,False,CHF
+Australia,AUS,9.0,Oceania,53.0,Australia and New Zealand,,,36.0,Oceania,False,False,False,False,AUD
+Christmas Island,CXR,9.0,Oceania,53.0,Australia and New Zealand,,,162.0,Oceania,False,False,False,False,
+Cocos (Keeling) Islands,CCK,9.0,Oceania,53.0,Australia and New Zealand,,,166.0,Oceania,False,False,False,False,
+Heard Island and McDonald Islands,HMD,9.0,Oceania,53.0,Australia and New Zealand,,,334.0,Oceania,False,False,False,False,
+New Zealand,NZL,9.0,Oceania,53.0,Australia and New Zealand,,,554.0,Oceania,False,False,False,False,NZD
+Norfolk Island,NFK,9.0,Oceania,53.0,Australia and New Zealand,,,574.0,Oceania,False,False,False,False,
+Fiji,FJI,9.0,Oceania,54.0,Melanesia,,,242.0,Oceania,False,False,True,True,FJD
+New Caledonia,NCL,9.0,Oceania,54.0,Melanesia,,,540.0,Oceania,False,False,True,True,XPF
+Papua New Guinea,PNG,9.0,Oceania,54.0,Melanesia,,,598.0,Oceania,False,False,True,True,PGK
+Solomon Islands,SLB,9.0,Oceania,54.0,Melanesia,,,90.0,Oceania,True,False,True,True,SBD
+Vanuatu,VUT,9.0,Oceania,54.0,Melanesia,,,548.0,Oceania,True,False,True,True,VUV
+Guam,GUM,9.0,Oceania,57.0,Micronesia,,,316.0,Oceania,False,False,True,True,
+Kiribati,KIR,9.0,Oceania,57.0,Micronesia,,,296.0,Oceania,True,False,True,True,
+Marshall Islands,MHL,9.0,Oceania,57.0,Micronesia,,,584.0,Oceania,False,False,True,True,
+Micronesia (Federated States of),FSM,9.0,Oceania,57.0,Micronesia,,,583.0,Oceania,False,False,True,True,
+Nauru,NRU,9.0,Oceania,57.0,Micronesia,,,520.0,Oceania,False,False,True,True,
+Northern Mariana Islands,MNP,9.0,Oceania,57.0,Micronesia,,,580.0,Oceania,False,False,True,True,
+Palau,PLW,9.0,Oceania,57.0,Micronesia,,,585.0,Oceania,False,False,True,True,
+United States Minor Outlying Islands,UMI,9.0,Oceania,57.0,Micronesia,,,581.0,Oceania,False,False,False,True,
+American Samoa,ASM,9.0,Oceania,61.0,Polynesia,,,16.0,Oceania,False,False,True,True,
+Cook Islands,COK,9.0,Oceania,61.0,Polynesia,,,184.0,Oceania,False,False,True,True,
+French Polynesia,PYF,9.0,Oceania,61.0,Polynesia,,,258.0,Oceania,False,False,True,True,
+Niue,NIU,9.0,Oceania,61.0,Polynesia,,,570.0,Oceania,False,False,True,True,
+Pitcairn,PCN,9.0,Oceania,61.0,Polynesia,,,612.0,Oceania,False,False,False,True,
+Samoa,WSM,9.0,Oceania,61.0,Polynesia,,,882.0,Oceania,False,False,True,True,
+Tokelau,TKL,9.0,Oceania,61.0,Polynesia,,,772.0,Oceania,False,False,False,True,
+Tonga,TON,9.0,Oceania,61.0,Polynesia,,,776.0,Oceania,False,False,True,True,TOP
+Tuvalu,TUV,9.0,Oceania,61.0,Polynesia,,,798.0,Oceania,True,False,True,True,
+Wallis and Futuna Islands,WLF,9.0,Oceania,61.0,Polynesia,,,876.0,Oceania,False,False,False,True,
+Taiwan,TWN,142.0,Asia,30.0,Eastern Asia,,,,Asia,False,False,False,False,
+Kosovo,KSV,150.0,Europe,39.0,Southern Europe,,,,Europe,False,False,False,False,
+Yugoslavia,YUG,150.0,Europe,39.0,Southern Europe,,,,Europe,False,False,False,False,

@@ -60,7 +60,7 @@ def delete_asset_class(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Asset class: '{asset_class}' is not empty. Please delete all files before deleting asset class."
         )
-    asset_path.unlink()
+    asset_path.rmdir()
     return
 
 
