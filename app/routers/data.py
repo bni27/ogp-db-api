@@ -9,7 +9,12 @@ from app.db import load_raw_data, stage_data, union_prod
 from app.pg import Record, row_count, select_data
 from app.pg import DuplicateHeaderError, PrimaryKeysMissingError
 from app.sql import prod_table, stage_schema
-from app.filesys import build_raw_file_path, get_data_files, get_directories
+from app.filesys import (
+    build_asset_path,
+    build_raw_file_path,
+    get_data_files,
+    get_directories,
+)
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -35,6 +40,28 @@ def get_asset_classes(verified: bool = True):
         "verification_status": "verified" if verified else "unverified",
         "asset_classes": [d.stem for d in get_directories(verified)],
     }
+
+
+@router.delete("/assetClasses/{asset_class}")
+def delete_asset_class(
+    asset_class: str,
+    verified: bool = True,
+    authenticated_user: User = Depends(validate_api_key),
+):
+    authenticated_user.check_privilege()
+    asset_path = build_asset_path(asset_class, verified, create=False)
+    if not asset_path.exists():
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Asset class: '{asset_class}' does not exist."
+        )
+    if any(asset_path.iterdir()):
+        return HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Asset class: '{asset_class}' is not empty. Please delete all files before deleting asset class."
+        )
+    asset_path.unlink()
+    return
 
 
 @router.get("/assetClasses/{asset_class}/files")
@@ -91,6 +118,23 @@ def download_file(
     return FileResponse(file_path)
 
 
+@router.delete("/assetClasses/{asset_class}/files/{file_name}")
+def delete_file(
+    asset_class: str,
+    file_name: str,
+    verified: bool = True,
+    authenticated_user: User = Depends(validate_api_key),
+):
+    authenticated_user.check_privilege()
+    file_path = build_raw_file_path(file_name, asset_class, verified)
+    try:
+        file_path.unlink()
+    except Exception as e:
+        logger.exception(e)
+        raise
+    return "File deleted"
+
+
 @router.put("/assetClasses/{asset_class}/files/{file_name}/updateRecord")
 def update_record(
     record: Record,
@@ -107,8 +151,8 @@ def update_record(
     file_path = build_raw_file_path(file_name, asset_class, verified)
     p_id_idx: int | None = None
     samp_idx: int | None = None
-    with open(file_path, 'r', encoding="utf-8-sig") as f:
-        headers = [h.lower() for h in f.readline().split(',')]
+    with open(file_path, "r", encoding="utf-8-sig") as f:
+        headers = [h.lower() for h in f.readline().split(",")]
         print(headers)
         for i, h in enumerate(headers):
             if h == "project_id":
@@ -123,12 +167,14 @@ def update_record(
             return "Extra headers specified"
         temp_file = file_path.parent / Path(f"{file_path.stem}.tmp")
         not_yet_replaced: bool = True
-        with open(temp_file, 'w') as t:
-            t.write(','.join(headers))
+        with open(temp_file, "w") as t:
+            t.write(",".join(headers))
             for l in f.readlines():
-                row = l.split(',')
+                row = l.split(",")
                 if (row[p_id_idx] == project_id) and (row[samp_idx] == sample):
-                    t.write(",".join([data.get(h, row[i]) for i, h in enumerate(headers)]))
+                    t.write(
+                        ",".join([data.get(h, row[i]) for i, h in enumerate(headers)])
+                    )
                     not_yet_replaced = False
                 else:
                     t.write(l)
@@ -161,12 +207,12 @@ def update_raw(
     except DuplicateHeaderError:
         return HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Duplicate headers found. Please fix and re-upload the file."
+            detail="Duplicate headers found. Please fix and re-upload the file.",
         )
     except PrimaryKeysMissingError:
         return HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Required primary keys missing. Make sure file has 'project_id' and 'sample' fields."
+            detail="Required primary keys missing. Make sure file has 'project_id' and 'sample' fields.",
         )
     except Exception as e:
         logger.exception(e)

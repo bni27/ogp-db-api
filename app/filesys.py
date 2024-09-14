@@ -10,10 +10,14 @@ def build_verified_path(verified: bool = False) -> Path:
     return BUCKET_MOUNT / verification_folder
 
 
-def build_asset_path(asset_class: str, verified: bool = False) -> Path:
-
+def build_asset_path(
+    asset_class: str,
+    verified: bool = False,
+    create: bool = True,
+) -> Path:
     asset_class_path = build_verified_path(verified) / Path(asset_class)
-    asset_class_path.mkdir(exist_ok=True)
+    if create:
+        asset_class_path.mkdir(exist_ok=True)
     return asset_class_path
 
 
