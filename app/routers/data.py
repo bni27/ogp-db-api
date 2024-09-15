@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse
 from app.auth import AuthLevel, User, validate_api_key
 from app.db import load_raw_data, stage_data, union_prod
 from app.pg import Record, row_count, select_data
-from app.pg import DuplicateHeaderError, PrimaryKeysMissingError
+from app.pg import DateFormatError, DuplicateHeaderError, PrimaryKeysMissingError
 from app.sql import prod_table, stage_schema
 from app.filesys import (
     build_asset_path,
@@ -72,6 +72,11 @@ def create_asset_class(
     authenticated_user: User = Depends(validate_api_key),
 ):
     authenticated_user.check_privilege()
+    if asset_class.lower().strip().replace(" ", "_") != asset_class:
+        return HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Asset class names must be lowercase, and have underscores instead of spaces."
+        )
     try:
         build_asset_path(asset_class, verified, create=True)
     except FileExistsError:
@@ -237,6 +242,11 @@ def update_raw(
         return HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Required primary keys missing. Make sure file has 'project_id' and 'sample' fields.",
+        )
+    except DateFormatError:
+        return HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Date field was uploaded with improper format. Double check that your date fields are 'YYYY-MM-DD'"
         )
     except Exception as e:
         logger.exception(e)

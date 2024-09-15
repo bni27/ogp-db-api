@@ -68,6 +68,10 @@ class PrimaryKeysMissingError(Exception):
     pass
 
 
+class DateFormatError(Exception):
+    pass
+
+
 @contextmanager
 def get_cursor():
     conn = psycopg2.connect(
@@ -124,7 +128,10 @@ def load_data_from_file(file_path: Path, table_name: str):
         header_line = f.readline()
         headers = header_line.split(",")
         create_table_from_headers(cur, table_name, headers, schema)
-        cur.copy_expert(copy_statement(table_name, header_line, schema), f)
+        try:
+            cur.copy_expert(copy_statement(table_name, header_line, schema), f)
+        except psycopg2.errors.DatetimeFieldOverflow:
+            raise DateFormatError
     return f"{schema}.{table_name}"
 
 
