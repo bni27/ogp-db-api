@@ -229,10 +229,21 @@ def update_raw(
     authenticated_user: User = Depends(validate_api_key),
 ):
     authenticated_user.check_privilege()
-    file_path = build_raw_file_path(file_name, asset_class, verified)
+    try:
+        file_path = build_raw_file_path(file_name, asset_class, verified)
+    except ValueError:
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Asset class '{asset_class}' does not exist",
+        )
     logger.info(f"Loading raw file: {file_path} into database.")
     try:
         table = load_raw_data(file_path)
+    except FileNotFoundError:
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"File '{file_name}' in asset class '{asset_class}' does not exist",
+        )
     except DuplicateHeaderError:
         return HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
