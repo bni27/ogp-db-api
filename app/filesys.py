@@ -13,11 +13,14 @@ def build_verified_path(verified: bool = False) -> Path:
 def build_asset_path(
     asset_class: str,
     verified: bool = False,
-    create: bool = True,
+    create: bool = False,
+    raise_if_absent: bool = True,
 ) -> Path:
     asset_class_path = build_verified_path(verified) / Path(asset_class)
     if create:
-        asset_class_path.mkdir(exist_ok=True)
+        asset_class_path.mkdir()
+    if raise_if_absent and not asset_class_path.exists():
+        raise ValueError
     return asset_class_path
 
 

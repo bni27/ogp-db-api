@@ -49,8 +49,9 @@ def delete_asset_class(
     authenticated_user: User = Depends(validate_api_key),
 ):
     authenticated_user.check_privilege()
-    asset_path = build_asset_path(asset_class, verified, create=False)
-    if not asset_path.exists():
+    try:
+        asset_path = build_asset_path(asset_class, verified)
+    except ValueError:
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Asset class: '{asset_class}' does not exist."
@@ -61,7 +62,24 @@ def delete_asset_class(
             detail=f"Asset class: '{asset_class}' is not empty. Please delete all files before deleting asset class."
         )
     asset_path.rmdir()
-    return
+    return "Asset class successfully deleted."
+
+
+@router.post("/assetClasses/{asset_class}")
+def create_asset_class(
+    asset_class: str,
+    verified: bool = True,
+    authenticated_user: User = Depends(validate_api_key),
+):
+    authenticated_user.check_privilege()
+    try:
+        build_asset_path(asset_class, verified, create=True)
+    except FileExistsError:
+        return HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Asset class '{asset_class}' already exists."
+        )
+    return status.HTTP_204_NO_CONTENT
 
 
 @router.get("/assetClasses/{asset_class}/files")
@@ -71,7 +89,13 @@ def get_asset_class_files(
     authenticated_user: User = Depends(validate_api_key),
 ):
     authenticated_user.check_privilege()
-    files = get_data_files(asset_class, verified)
+    try:
+        files = get_data_files(asset_class, verified)
+    except ValueError:
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Asset class '{asset_class}' not found"
+        )
     return {
         "asset_class": asset_class,
         "verification_status": "verified" if verified else "unverified",
