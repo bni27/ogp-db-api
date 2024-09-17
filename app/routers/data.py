@@ -267,7 +267,10 @@ def update_raw(
         )
     except Exception as e:
         logger.exception(e)
-        raise e
+        return HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=e
+        )
     return {
         "table_name": table,
         "rows": row_count(table)[0],
