@@ -23,7 +23,7 @@ def load_raw_data(file_path: Path):
     return load_data_from_file(file_path, file_path.stem)
 
 
-def stage_data(asset_class: str, verified: bool = False):
+def stage_data(asset_class: str, verified: bool = True):
     # get all raw tables of the asset class
     tables = [
         f"{raw_schema(verified)}.{f.stem}"
@@ -37,5 +37,15 @@ def stage_data(asset_class: str, verified: bool = False):
         )
 
 
-def union_prod(verified: bool = False):
+def delete_raw_table(file_name: str, verified: bool = True):
+    with get_cursor() as cur:
+        drop_table(cur, file_name, raw_schema(verified))
+
+
+def delete_stage_table(asset_class: str, verified: bool = True):
+    with get_cursor() as cur:
+        drop_table(cur, asset_class, stage_schema(verified))
+
+
+def union_prod(verified: bool = True):
     union_all_in_schema(stage_schema(verified), prod_table(verified), "prod")

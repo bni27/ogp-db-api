@@ -5,7 +5,13 @@ from fastapi import APIRouter, Depends, File, HTTPException, status, UploadFile
 from fastapi.responses import FileResponse
 
 from app.auth import AuthLevel, User, validate_api_key
-from app.db import load_raw_data, stage_data, union_prod
+from app.db import (
+    delete_raw_table,
+    delete_stage_table,
+    load_raw_data,
+    stage_data,
+    union_prod,
+)
 from app.pg import Record, row_count, select_data
 from app.pg import DateFormatError, DuplicateHeaderError, PrimaryKeysMissingError
 from app.sql import prod_table, stage_schema
@@ -54,12 +60,12 @@ def delete_asset_class(
     except ValueError:
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Asset class: '{asset_class}' does not exist."
+            detail=f"Asset class: '{asset_class}' does not exist.",
         )
     if any(asset_path.iterdir()):
         return HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"Asset class: '{asset_class}' is not empty. Please delete all files before deleting asset class."
+            detail=f"Asset class: '{asset_class}' is not empty. Please delete all files before deleting asset class.",
         )
     asset_path.rmdir()
     return "Asset class successfully deleted."
@@ -75,14 +81,14 @@ def create_asset_class(
     if asset_class.lower().strip().replace(" ", "_") != asset_class:
         return HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Asset class names must be lowercase, and have underscores instead of spaces."
+            detail="Asset class names must be lowercase, and have underscores instead of spaces.",
         )
     try:
         build_asset_path(asset_class, verified, create=True)
     except FileExistsError:
         return HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"Asset class '{asset_class}' already exists."
+            detail=f"Asset class '{asset_class}' already exists.",
         )
     return status.HTTP_204_NO_CONTENT
 
@@ -99,7 +105,7 @@ def get_asset_class_files(
     except ValueError:
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Asset class '{asset_class}' not found"
+            detail=f"Asset class '{asset_class}' not found",
         )
     return {
         "asset_class": asset_class,
@@ -257,7 +263,7 @@ def update_raw(
     except DateFormatError:
         return HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Date field was uploaded with improper format. Double check that your date fields are 'YYYY-MM-DD'"
+            detail="Date field was uploaded with improper format. Double check that your date fields are 'YYYY-MM-DD'",
         )
     except Exception as e:
         logger.exception(e)
@@ -266,6 +272,16 @@ def update_raw(
         "table_name": table,
         "rows": row_count(table)[0],
     }
+
+
+@router.delete("/rawTables/{table_name}")
+def delete_raw(
+    table_name: str,
+    verified: bool = True,
+    authenticated_user: User = Depends(validate_api_key),
+):
+    authenticated_user.check_privilege()
+    delete_raw_table(table_name, verified)
 
 
 @router.post("/assetClasses/{asset_class}/stage/update")
@@ -277,6 +293,16 @@ def update_stage(
     authenticated_user.check_privilege()
     stage_data(asset_class, verified)
 
+
+@router.delete("/assetClasses/{asset_class}/stage")
+def delete_stage(
+    asset_class: str,
+    verified: bool = True,
+    authenticated_user: User = Depends(validate_api_key),
+):
+    authenticated_user.check_privilege()
+    delete_stage_table(asset_class, verified)
+    return status.HTTP_204_NO_CONTENT
 
 @router.get("/assetClasses/{asset_class}/stage/data")
 def get_stage_data(
