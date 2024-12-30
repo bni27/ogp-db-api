@@ -1,19 +1,29 @@
 from os import environ
 from typing import Optional
 
+from google.cloud.sql.connector import Connector
 from pydantic import create_model
-from sqlalchemy import inspect, MetaData, Table, URL
+from sqlalchemy import inspect, MetaData, Table
 from sqlmodel import Field, Session, SQLModel, create_engine
 
 
+# build connection (for creator argument of connection pool)
+def getconn():
+    # Cloud SQL Python Connector object
+    with Connector() as connector:
+        conn = connector.connect(
+            f"/cloudsql/{environ.get('INSTANCE_CONNECTION_NAME')}",  # Cloud SQL instance connection name
+            "pg8000",
+            user=environ.get("DB_USER"),
+            password=environ.get("DB_PASS"),
+            db=environ.get("DB_NAME"),
+        )
+    return conn
+
+
 engine = create_engine(
-    URL.create(
-        "postgresql+pg8000",
-        username=environ.get("DB_USER"),
-        password=environ.get("DB_PASS"),
-        host=f"/cloudsql/{environ.get('INSTANCE_CONNECTION_NAME')}",
-        database=environ.get("DB_NAME"),
-    ),
+    "postgresql+pg8000",
+    creator=getconn,
     echo=True,
 )
 
