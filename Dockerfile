@@ -6,4 +6,4 @@ RUN pip install pipenv
 RUN pipenv install --system --deploy
 COPY ./main.py /code/
 COPY ./app /code/app
-CMD ["python", "main.py"]
+CMD ["fastapi", "run", "main.py", "--port", "8080"]
