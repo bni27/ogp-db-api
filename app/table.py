@@ -6,15 +6,16 @@ from sqlalchemy import inspect, MetaData, Table, URL
 from sqlmodel import Field, Session, SQLModel, create_engine
 
 
-connect_args = {"check_same_thread": False}
 engine = create_engine(
     URL.create(
         "postgresql+pg8000",
         username=environ.get("DB_USER"),
         password=environ.get("DB_PASS"),
         host=f"/cloudsql/{environ.get('INSTANCE_CONNECTION_NAME')}",
-        database=environ.get("DB_NAME")
-    ), echo=True, connect_args=connect_args)
+        database=environ.get("DB_NAME"),
+    ),
+    echo=True,
+)
 
 
 def get_session():
@@ -33,7 +34,7 @@ def get_column_descriptions(table_name, engine):
     return {
         c.name: (
             Optional[c.type.python_type] if c.nullable else c.type.python_type,
-            Field(default=c.default, primary_key=c.primary_key)
+            Field(default=c.default, primary_key=c.primary_key),
         )
         for c in table_data.columns
     }
