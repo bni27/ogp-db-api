@@ -8,7 +8,7 @@ from sqlmodel import Field, Session, SQLModel, create_engine
 
 connect_args = {"check_same_thread": False}
 engine = create_engine(
-    URL(
+    URL.create(
         "postgresql+pg8000",
         username=environ.get("DB_USER"),
         password=environ.get("DB_PASS"),
