@@ -71,19 +71,3 @@ class Factory:
         )
         self.tables[table_name] = new_table
         new_table.__table__.create(engine)
-
-
-if __name__ == "__main__":
-    sample_record = {
-        "id": 3,
-        "name": "Ian Bakst",
-        "secret_name": "bakst2thefuture",
-        "age": 34,
-    }
-    database = Factory()
-    table_name = "ports"
-    database.map_existing_table(table_name)
-    record = database.tables[table_name].model_validate(sample_record)
-    with Session(engine) as session:
-        session.add(record)
-        session.commit()

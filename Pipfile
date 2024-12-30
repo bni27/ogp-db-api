@@ -12,6 +12,8 @@ cloud-sql-python-connector = {extras = ["pg8000"], version = "*"}
 pycryptodome = "*"
 python-multipart = "*"
 psycopg2-binary = "*"
+wbgapi = "*"
+sqlmodel = "*"
 
 [dev-packages]
 black = "*"
