@@ -22,7 +22,7 @@ def getconn():
 
 
 engine = create_engine(
-    "postgresql+pg8000",
+    "postgresql+pg8000://",
     creator=getconn,
     echo=True,
 )
