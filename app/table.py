@@ -12,7 +12,7 @@ def getconn():
     # Cloud SQL Python Connector object
     with Connector() as connector:
         conn = connector.connect(
-            f"/cloudsql/{environ.get('INSTANCE_CONNECTION_NAME')}",  # Cloud SQL instance connection name
+            f"cloudsql/{environ.get('INSTANCE_CONNECTION_NAME')}",  # Cloud SQL instance connection name
             "pg8000",
             user=environ.get("DB_USER"),
             password=environ.get("DB_PASS"),
