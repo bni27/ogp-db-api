@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from os import environ
 from typing import Annotated, Optional
 
@@ -34,6 +35,7 @@ class DatabaseManager:
             echo=True,
         )
 
+    @contextmanager
     def get_session(self):
         with Session(self.engine) as session:
             yield session
