@@ -57,6 +57,9 @@ class DatabaseManager:
             )
             for c in table_data.columns
         }
+    
+    def get_all_table_names(self, schema):
+        return [t for t in inspect(self.engine).get_table_names(schema)]
 
     def map_existing_table(self, table_name: str, schema: str):
         if not (self.table_exists(table_name, schema) and self.schema_exists(schema)):
