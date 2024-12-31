@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 @router.get("/")
-async def data(verified: bool = True, db: DB_MGMT):
+async def data(db: DB_MGMT, verified: bool = True):
     return select_data(prod_table(verified), "prod")
 
 
