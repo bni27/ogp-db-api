@@ -4,10 +4,9 @@ from pathlib import Path
 from fastapi import Depends, FastAPI, status
 from fastapi.responses import FileResponse, JSONResponse
 from psycopg2 import OperationalError
-from sqlmodel import Session
 
 from app.auth import validate_api_key
-from app.table import get_session
+from app.table import DB_MGMT
 from app.routers import auth, data
 
 
@@ -37,11 +36,11 @@ async def get_favicon():
 
 
 @app.get("/health", status_code=status.HTTP_200_OK)
-async def health(session: Session = Depends(get_session)):
+async def health(db: DB_MGMT):
     db_ok = True
     filesys_ok = True
     try:
-        with session.connection():
+        with db.get_session().connection():
             pass
         assert os.path.exists("/data")
     except OperationalError as e:
