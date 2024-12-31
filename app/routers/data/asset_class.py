@@ -22,28 +22,15 @@ from app.pg import Record, row_count, select_data
 from app.pg import DateFormatError, DuplicateHeaderError, PrimaryKeysMissingError
 from app.sql import prod_table, stage_schema
 from app.table import DB_MGMT
-from app.routers.data import asset_class
 
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-APIRouter.include_router(
-    asset_class.router,
-    prefix="assetClass",
-    dependencies=[Depends(validate_api_key)],
-)
 
-
-@router.get("/")
-async def data(db: DB_MGMT, verified: bool = True):
-    return select_data(prod_table(verified), "prod")
-
-
-@router.post("/update", status_code=status.HTTP_204_NO_CONTENT)
-async def update(
-    verified: bool = True,
-    authenticated_user: User = Depends(validate_api_key),
-):
-    authenticated_user.check_privilege()
-    union_prod(verified)
+@router.get("/assetClasses")
+def get_asset_classes(verified: bool = True):
+    return {
+        "verification_status": "verified" if verified else "unverified",
+        "asset_classes": [d.stem for d in get_directories(verified)],
+    }
