@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 router.include_router(
     asset_class.router,
-    prefix="assetClass",
+    prefix="/assetClass",
     dependencies=[Depends(validate_api_key)],
 )
 
