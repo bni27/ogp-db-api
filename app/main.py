@@ -40,7 +40,7 @@ async def health(db: DB_MGMT):
     db_ok = True
     filesys_ok = True
     try:
-        with db.get_session().connection():
+        with db.get_session() as s, s.connection():
             pass
         assert os.path.exists("/data")
     except OperationalError as e:
