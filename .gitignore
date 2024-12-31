@@ -163,5 +163,5 @@ cython_debug/
 
 .env
 
-data/
+/data/
 !data/.keep
