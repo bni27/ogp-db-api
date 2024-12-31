@@ -1,28 +1,22 @@
 import logging
-from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, HTTPException, status, UploadFile
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, Depends, status
 
-from app.auth import AuthLevel, User, validate_api_key
+from app.auth import User, validate_api_key
 from app.db import (
-    delete_raw_table,
-    delete_stage_table,
-    load_raw_data,
-    stage_data,
     union_prod,
 )
-from app.filesys import (
-    build_asset_path,
-    build_raw_file_path,
-    get_data_files,
-    get_directories,
-)
-from app.pg import Record, row_count, select_data
-from app.pg import DateFormatError, DuplicateHeaderError, PrimaryKeysMissingError
-from app.sql import prod_table, stage_schema
+from app.pg import select_data
+from app.sql import prod_table
 from app.table import DB_MGMT
-from app.routers.data import asset_class
+from app.routers.data import (
+    asset_class,
+    filesys,
+    # raw_table,
+    # record,
+    # reference,
+    # stage_table,
+)
 
 
 router = APIRouter()
@@ -33,6 +27,31 @@ router.include_router(
     prefix="/assetClass",
     dependencies=[Depends(validate_api_key)],
 )
+router.include_router(
+    filesys.router,
+    prefix="/file",
+    dependencies=[Depends(validate_api_key)],
+)
+# router.include_router(
+#     raw_table.router,
+#     prefix="/rawTable",
+#     dependencies=[Depends(validate_api_key)],
+# )
+# router.include_router(
+#     record.router,
+#     prefix="/record",
+#     dependencies=[Depends(validate_api_key)],
+# )
+# router.include_router(
+#     reference.router,
+#     prefix="/reference",
+#     dependencies=[Depends(validate_api_key)],
+# )
+# router.include_router(
+#     stage_table.router,
+#     prefix="/stageTable",
+#     dependencies=[Depends(validate_api_key)],
+# )
 
 
 @router.get("/")
