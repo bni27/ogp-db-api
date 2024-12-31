@@ -12,7 +12,7 @@ from app.table import DB_MGMT
 from app.routers.data import (
     asset_class,
     filesys,
-    # raw_table,
+    raw_table,
     # record,
     # reference,
     # stage_table,
@@ -32,11 +32,11 @@ router.include_router(
     prefix="/file",
     dependencies=[Depends(validate_api_key)],
 )
-# router.include_router(
-#     raw_table.router,
-#     prefix="/rawTable",
-#     dependencies=[Depends(validate_api_key)],
-# )
+router.include_router(
+    raw_table.router,
+    prefix="/rawTable",
+    dependencies=[Depends(validate_api_key)],
+)
 # router.include_router(
 #     record.router,
 #     prefix="/record",
