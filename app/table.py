@@ -93,7 +93,8 @@ class DatabaseManager:
         new_table.__table__.create(self.engine)
     
     def drop_table(self, table_name: str, schema: str):
-        if not self.table_exists:
+        if not self.table_exists(table_name, schema):
+            print(f"table does not exist: {table_name}")
             raise ValueError
         if self.tables.get(schema, {}).get(table_name) is None:
             self.map_existing_table(table_name, schema)
