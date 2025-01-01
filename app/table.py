@@ -50,13 +50,15 @@ class DatabaseManager:
         metadata = MetaData()
         metadata.reflect(self.engine)
         table_data = Table(table_name, metadata, schema=schema)
-        return {
+        cols = {
             c.name: (
                 Optional[c.type.python_type] if c.nullable else c.type.python_type,
                 Field(default=c.default, primary_key=c.primary_key),
             )
             for c in table_data.columns
         }
+        print(cols)
+        return
     
     def get_all_table_names(self, schema):
         return [t for t in inspect(self.engine).get_table_names(schema)]
