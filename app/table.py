@@ -72,7 +72,8 @@ class DatabaseManager:
         new_table = create_model(
             table_name,
             __base__=SQLModel,
-            __cls_kwargs__={"table": True, "__table_args__": {"schema": schema}},
+            __cls_kwargs__={"table": True},
+            __table_args__={"schema": schema},
             **self.get_column_descriptions(table_name, schema),
         )
         self.tables[schema][table_name] = new_table
@@ -86,7 +87,8 @@ class DatabaseManager:
         new_table = create_model(
             table_name,
             __base__=SQLModel,
-            __cls_kwargs__={"table": True, "__table_args__": {"schema": schema}},
+            __cls_kwargs__={"table": True},
+            __table_args__={"schema": schema},
             **definitions,
         )
         self.tables[table_name] = new_table
