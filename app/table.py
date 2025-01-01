@@ -49,7 +49,7 @@ class DatabaseManager:
     def get_column_descriptions(self, table_name, schema):
         metadata = MetaData()
         metadata.reflect(self.engine)
-        table_data = Table(f"{schema}.{table_name}", metadata)
+        table_data = Table(table_name, metadata, schema=schema)
         return {
             c.name: (
                 Optional[c.type.python_type] if c.nullable else c.type.python_type,
