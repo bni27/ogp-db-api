@@ -41,7 +41,7 @@ class DatabaseManager:
             yield session
 
     def table_exists(self, table_name: str, schema: str) -> bool:
-        return inspect(self.engine).has_table(f"{schema}.{table_name}")
+        return inspect(self.engine).has_table(table_name, schema=schema)
 
     def schema_exists(self, schema: str) -> bool:
         return inspect(self.engine).has_schema(schema)
