@@ -90,7 +90,17 @@ class DatabaseManager:
         )
         self.tables[table_name] = new_table
         new_table.__table__.create(self.engine)
-
+    
+    def drop_table(self, table_name: str, schema: str):
+        if not self.table_exists:
+            raise ValueError
+        try:
+            table_to_drop = self.tables.get(schema, {}).pop(table_name)
+            table_to_drop.__table__.drop(self.engine)
+        except AttributeError as e :
+            print("Something didn't work while dropping table")
+            raise
+        
 
 database_manager = DatabaseManager()
 
