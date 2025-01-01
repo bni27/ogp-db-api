@@ -63,6 +63,7 @@ class DatabaseManager:
 
     def map_existing_table(self, table_name: str, schema: str):
         if not (self.table_exists(table_name, schema) and self.schema_exists(schema)):
+            print(f"Schema: {schema} does not exist.")
             raise ValueError
         if schema not in self.tables:
             self.tables[schema] = {}
