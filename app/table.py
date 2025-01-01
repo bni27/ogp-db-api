@@ -94,6 +94,8 @@ class DatabaseManager:
     def drop_table(self, table_name: str, schema: str):
         if not self.table_exists:
             raise ValueError
+        if self.tables.get(schema, {}).get(table_name) is None:
+            self.map_existing_table(table_name, schema)
         try:
             table_to_drop = self.tables.get(schema, {}).pop(table_name)
             table_to_drop.__table__.drop(self.engine)
