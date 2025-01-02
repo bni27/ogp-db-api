@@ -31,20 +31,21 @@ def data_type(header: str) -> type:
     for dtype, conditions in COLUMN_TYPE_NOTATION.items():
         if any(
             lower_header.endswith(suffix) for suffix in conditions["suffixes"]
-        ) or any(lower_header.endswith(prefix) for prefix in conditions["prefixes"]):
+        ) or any(lower_header.startsswith(prefix) for prefix in conditions["prefixes"]):
             return dtype
 
 
-def column_details(headers: list[str]) -> dict[str, tuple[type, Field]]:
+def column_details(headers: list[str]) -> tuple[dict[str, tuple[type, Field]], dict[str, type]]:
     details = {}
+    types = {}
     for header in headers:
         pk = header in PRIMARY_KEYS
-        db_type = data_type(header)
+        types[header] = data_type(header)
         details[header] = (
-            db_type if pk else Optional[db_type],
+            types[header] if pk else Optional[types[header]],
             Field(default="" if pk else None, primary_key=pk)
         )
-    return details
+    return details, types
 
 
 def load_raw_data(file_path: Path, db: DatabaseManager):
@@ -55,17 +56,17 @@ def load_raw_data(file_path: Path, db: DatabaseManager):
             _logger.info(f"Adding existing table: {schema}.{table_name} to DB manager.")
             db.map_existing_table(table_name, schema)
         db.drop_table(table_name, schema)
-    with open(file_path, "r", encoding="utf-8-sig") as f:
+    with open(file_path, "r", encoding="utf-8-sig", newline="") as f:
         data = csv.DictReader(f)
         first_row = next(data)
         headers = [k for k in first_row.keys()]
-        col_desc = column_details(headers)
+        col_desc, dtypes = column_details(headers)
         db.create_new_table(table_name, schema, col_desc)
         with db.get_session() as session:
-            session.add(db.tables[schema][table_name](**first_row))
+            session.add(db.tables[schema][table_name](**{k: dtypes[k](v) for k, v in first_row.items()}))
             session.commit()
             for row in data:
-                session.add(db.tables[schema][table_name](**row))
+                session.add(db.tables[schema][table_name](**{k: dtypes[k](v) for k, v in row.items()}))
                 session.commit()
             
     return f"{schema}.{table_name}"
