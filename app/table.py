@@ -83,7 +83,8 @@ class DatabaseManager:
             schema in self.tables and table_name in self.tables[schema]
         ):
             raise ValueError
-
+        if schema not in self.tables:
+            self.tables[schema] = {}
         new_table = create_model(
             table_name,
             __base__=SQLModel,
@@ -91,7 +92,7 @@ class DatabaseManager:
             __table_args__={"schema": schema},
             **definitions,
         )
-        self.tables[table_name] = new_table
+        self.tables[schema][table_name] = new_table
         new_table.__table__.create(self.engine)
     
     def drop_table(self, table_name: str, schema: str):
