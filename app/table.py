@@ -89,7 +89,7 @@ class DatabaseManager:
             table_name,
             __base__=SQLModel,
             __cls_kwargs__={"table": True},
-            __table_args__={"schema": schema},
+            __table_args__={"schema": schema, "extend_existing": True},
             **definitions,
         )
         self.tables[schema][table_name] = new_table
@@ -104,6 +104,7 @@ class DatabaseManager:
         try:
             table_to_drop = self.tables.get(schema, {}).pop(table_name)
             table_to_drop.__table__.drop(self.engine)
+
         except AttributeError as e :
             print("Something didn't work while dropping table")
             raise
