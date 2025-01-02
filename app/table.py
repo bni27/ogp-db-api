@@ -88,10 +88,11 @@ class DatabaseManager:
             table_name,
             __base__=SQLModel,
             __cls_kwargs__={"table": True},
-            __table_args__={"schema": schema, "extend_existing": True},
+            __table_args__={"schema": schema},
             **definitions,
         )
-        self.tables[schema][table_name].__table__.create(self.engine)
+        with self.get_session() as session:
+            SQLModel.metadata.tables[f'{schema}.{table_name}'].create(session.bind)
     
     def drop_table(self, table_name: str, schema: str):
         if not self.table_exists(table_name, schema):
@@ -101,7 +102,8 @@ class DatabaseManager:
             self.map_existing_table(table_name, schema)
         try:
             table_to_drop = self.tables.get(schema, {}).pop(table_name)
-            table_to_drop.__table__.drop(self.engine)
+            with self.get_session() as session:
+                SQLModel.metadata.tables[f"{schema}.{table_name}"].drop(session.bind)
 
         except AttributeError as e:
             print("Something didn't work while dropping table")

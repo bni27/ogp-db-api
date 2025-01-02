@@ -48,9 +48,9 @@ def column_details(headers: list[str]) -> tuple[dict[str, tuple[type, Field]], d
     return details, types
 
 
-def load_raw_data(file_path: Path, db: DatabaseManager):
+def load_raw_data(file_path: Path, db: DatabaseManager, verified: bool = True):
     table_name = file_path.stem
-    schema = f"raw_{file_path.parent.parent.stem}"
+    schema = raw_schema(verified)
     if db.table_exists(table_name, schema):
         if db.tables.get(schema, {}).get(table_name) is None:
             _logger.info(f"Adding existing table: {schema}.{table_name} to DB manager.")
