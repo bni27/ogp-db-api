@@ -31,7 +31,7 @@ def data_type(header: str) -> type:
     for dtype, conditions in COLUMN_TYPE_NOTATION.items():
         if any(
             lower_header.endswith(suffix) for suffix in conditions["suffixes"]
-        ) or any(lower_header.startsswith(prefix) for prefix in conditions["prefixes"]):
+        ) or any(lower_header.startswith(prefix) for prefix in conditions["prefixes"]):
             return dtype
 
 
