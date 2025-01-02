@@ -55,7 +55,7 @@ def load_raw_data(file_path: Path, db: DatabaseManager):
             _logger.info(f"Adding existing table: {schema}.{table_name} to DB manager.")
             db.map_existing_table(table_name, schema)
         db.drop_table(table_name, schema)
-    with open(file_path, "r", encoding="utf-8-sig", newline='') as f:
+    with open(file_path, "r", encoding="utf-8-sig") as f:
         data = csv.DictReader(f)
         first_row = next(data)
         headers = [k for k in first_row.keys()]
