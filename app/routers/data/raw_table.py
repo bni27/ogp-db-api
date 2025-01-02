@@ -5,19 +5,13 @@ from fastapi import APIRouter, Depends, File, HTTPException, status, UploadFile
 from fastapi.responses import FileResponse
 
 from app.auth import AuthLevel, User, validate_api_key
-from app.db import (
-    delete_raw_table,
-    delete_stage_table,
-    load_raw_data,
-    stage_data,
-    union_prod,
-)
 from app.filesys import (
     build_asset_path,
     build_raw_file_path,
     get_data_files,
     get_directories,
 )
+from app.operations import load_raw_data, drop_raw_table
 from app.pg import Record, row_count, select_data
 from app.pg import DateFormatError, DuplicateHeaderError, PrimaryKeysMissingError
 from app.sql import prod_table, raw_schema, stage_schema
@@ -61,7 +55,7 @@ def load_raw(
         )
     logger.info(f"Loading raw file: {file_path} into database.")
     try:
-        table = load_raw_data(file_path)
+        table = load_raw_data(file_path, db)
     except FileNotFoundError:
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -89,7 +83,6 @@ def load_raw(
         )
     return {
         "table_name": table,
-        "rows": row_count(table)[0],
     }
 
 
@@ -109,4 +102,5 @@ def delete_raw(
     """Delete Raw Table
     """
     authenticated_user.check_privilege()
-    db.drop_table(table_name, raw_schema(verified))
+    drop_raw_table(table_name, verified, db)
+    return status.HTTP_204_NO_CONTENT

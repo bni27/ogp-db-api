@@ -78,7 +78,7 @@ class DatabaseManager:
         )
         self.tables[schema][table_name] = new_table
 
-    def map_new_table(self, table_name: str, schema: str, definitions: dict):
+    def create_new_table(self, table_name: str, schema: str, definitions: dict):
         if self.table_exists(table_name, schema) or (
             schema in self.tables and table_name in self.tables[schema]
         ):
