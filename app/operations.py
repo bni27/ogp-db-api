@@ -64,10 +64,9 @@ def load_raw_data(file_path: Path, db: DatabaseManager):
         db.create_new_table(table_name, schema, col_desc)
         with db.get_session() as session:
             session.add(db.tables[schema][table_name].model_validate_strings({k: v for k, v in first_row.items() if v != ""}))
-            session.commit()
             for row in data:
                 session.add(db.tables[schema][table_name].model_validate_strings({k: v for k, v in row.items() if v != ""}))
-                session.commit()
+            session.commit()
             
     return f"{schema}.{table_name}"
 
