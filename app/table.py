@@ -69,14 +69,13 @@ class DatabaseManager:
             self.tables[schema] = {}
         if table_name in self.tables[schema]:
             return
-        new_table = create_model(
+        self.tables[schema][table_name] = create_model(
             table_name,
             __base__=SQLModel,
             __cls_kwargs__={"table": True},
             __table_args__={"schema": schema},
             **self.get_column_descriptions(table_name, schema),
         )
-        self.tables[schema][table_name] = new_table
 
     def create_new_table(self, table_name: str, schema: str, definitions: dict):
         if self.table_exists(table_name, schema) or (
@@ -102,10 +101,9 @@ class DatabaseManager:
             self.map_existing_table(table_name, schema)
         try:
             table_to_drop = self.tables.get(schema, {}).pop(table_name)
-            with self.get_session() as session:
-                table_to_drop.__table__.drop(session)
+            table_to_drop.__table__.drop(self.engine)
 
-        except AttributeError as e :
+        except AttributeError as e:
             print("Something didn't work while dropping table")
             raise
         
