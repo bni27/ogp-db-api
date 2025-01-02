@@ -92,7 +92,8 @@ class DatabaseManager:
             **definitions,
         )
         with self.get_session() as session:
-            SQLModel.metadata.tables[f'{schema}.{table_name}'].create(session.bind)
+            SQLModel.metadata._add_table(self.tables[schema][table_name])
+            SQLModel.metadata.tables[f"{schema}.{table_name}"].create(session.bind)
     
     def drop_table(self, table_name: str, schema: str):
         if not self.table_exists(table_name, schema):
