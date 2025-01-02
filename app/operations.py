@@ -21,7 +21,7 @@ COLUMN_TYPE_NOTATION = {
     str: {"suffixes": [""], "prefixes": []},
 }
 STANDARD_DAY = "-07-02"
-DATE_FORMAT = ["%Y-%m-%d"]
+DATE_FORMAT = "%Y-%m-%d"
 PRIMARY_KEYS = {"project_id", "sample"}
 
 _logger = logging.getLogger(__name__)
@@ -47,15 +47,14 @@ def data_type(header: str) -> type:
 
 def column_details(headers: list[str]) -> tuple[dict[str, tuple[type, Field]], dict[str, type]]:
     details = {}
-    types = {}
     for header in headers:
         pk = header in PRIMARY_KEYS
-        types[header] = data_type(header)
+        dtype = data_type(header)
         details[header] = (
-            types[header] if pk else Optional[types[header]],
+            dtype if pk else Optional[dtype],
             Field(default="" if pk else None, primary_key=pk)
         )
-    return details, types
+    return details
 
 
 def load_raw_data(file_path: Path, db: DatabaseManager, verified: bool = True):
@@ -70,13 +69,12 @@ def load_raw_data(file_path: Path, db: DatabaseManager, verified: bool = True):
         data = csv.DictReader(f)
         first_row = next(data)
         headers = [k for k in first_row.keys()]
-        col_desc, dtypes = column_details(headers)
+        col_desc = column_details(headers)
         db.create_new_table(table_name, schema, col_desc)
         with db.get_session() as session:
-            session.add(db.tables[schema][table_name].model_validate_strings({k: type_cast(k, v) for k, v in first_row.items() if v != ""}))
+            session.add(db.tables[schema][table_name](**{k: type_cast(k, v) for k, v in first_row.items() if v != ""}))
             for row in data:
-                session.add(db.tables[schema][table_name].model_validate_strings({k: type_cast(k, v) for k, v in row.items() if v != ""}))
-            session.commit()
+                session.add(db.tables[schema][table_name](**{k: type_cast(k, v) for k, v in row.items() if v != ""}))
             
     return f"{schema}.{table_name}"
 
