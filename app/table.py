@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from copy import deepcopy
 from os import environ
 from typing import Annotated, Optional
 
@@ -6,7 +7,7 @@ from fastapi import Depends
 from google.cloud.sql.connector import Connector
 from pydantic import create_model
 from sqlalchemy import inspect, MetaData, Table, Engine
-from sqlmodel import Field, Session, SQLModel, create_engine
+from sqlmodel import Field, Session, SQLModel, create_engine, select
 
 
 # build connection (for creator argument of connection pool)
@@ -39,7 +40,6 @@ class DatabaseManager:
     def get_session(self):
         with Session(self.engine) as session:
             yield session
-            session.commit()
 
     def table_exists(self, table_name: str, schema: str) -> bool:
         return inspect(self.engine).has_table(table_name, schema=schema)
@@ -77,7 +77,6 @@ class DatabaseManager:
             __table_args__={"schema": schema, "extend_existing": True},
             **self.get_column_descriptions(table_name, schema),
         )
-        # SQLModel.register(self.tables[schema][table_name])
 
     def create_new_table(self, table_name: str, schema: str, definitions: dict):
         if self.table_exists(table_name, schema) or (
@@ -109,6 +108,13 @@ class DatabaseManager:
         except AttributeError as e:
             print("Something didn't work while dropping table")
             raise
+    
+    def select_from_table(self, table_name: str, schema: str) -> list[SQLModel]:
+        self.map_existing_table(table_name, schema)
+
+        with self.get_session() as session:
+            data = session.exec(select(self.tables[schema][table_name]))
+            return data.all()
         
 
 database_manager = DatabaseManager()

@@ -75,7 +75,7 @@ def load_raw_data(file_path: Path, db: DatabaseManager, verified: bool = True):
             session.add(db.tables[schema][table_name](**{k: type_cast(k, v) for k, v in first_row.items() if v != ""}))
             for row in data:
                 session.add(db.tables[schema][table_name](**{k: type_cast(k, v) for k, v in row.items() if v != ""}))
-            
+            session.commit()
     return f"{schema}.{table_name}"
 
 

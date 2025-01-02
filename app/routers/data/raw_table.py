@@ -3,6 +3,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, HTTPException, status, UploadFile
 from fastapi.responses import FileResponse
+from sqlmodel import select
 
 from app.auth import AuthLevel, User, validate_api_key
 from app.filesys import (
@@ -86,6 +87,20 @@ def load_raw(
     }
 
 
+@router.get("/{table_name}")
+def get_raw_table(
+    table_name: str,
+    db: DB_MGMT,
+    verified: bool = True,
+    authenticated_user: User = Depends(validate_api_key),
+):
+    """Return raw data from table.
+    """
+    authenticated_user.check_privilege()
+    return db.select_from_table(table_name, raw_schema(verified))
+
+
+
 # @router.post("/{table_name}")
 # def create_raw_table(headers):
 #     # Initialize new raw table with no records
@@ -99,8 +114,7 @@ def delete_raw(
     verified: bool = True,
     authenticated_user: User = Depends(validate_api_key),
 ):
-    """Delete Raw Table
-    """
+    """Delete Raw Table"""
     authenticated_user.check_privilege()
     drop_raw_table(table_name, verified, db)
     return status.HTTP_204_NO_CONTENT
