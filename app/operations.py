@@ -57,10 +57,12 @@ def load_raw_data(file_path: Path, db: DatabaseManager):
         db.drop_table(table_name, schema)
     with open(file_path, "r", encoding="utf-8-sig", newline='') as f:
         data = csv.DictReader(f)
-        headers = [k for k in data[0].keys()]
+        first_row = next(data)
+        headers = [k for k in first_row.keys()]
         col_desc = column_details(headers)
         db.create_new_table(table_name, schema, col_desc)
         with db.get_session() as session:
+            session.add(db.tables[schema][table_name](**first_row))
             for row in data:
                 session.add(db.tables[schema][table_name](**row))
             session.commit()
