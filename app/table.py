@@ -73,9 +73,10 @@ class DatabaseManager:
             table_name,
             __base__=SQLModel,
             __cls_kwargs__={"table": True},
-            __table_args__={"schema": schema},
+            __table_args__={"schema": schema, "extend_existing": True},
             **self.get_column_descriptions(table_name, schema),
         )
+        # SQLModel.register(self.tables[schema][table_name])
 
     def create_new_table(self, table_name: str, schema: str, definitions: dict):
         if self.table_exists(table_name, schema) or (
@@ -88,12 +89,11 @@ class DatabaseManager:
             table_name,
             __base__=SQLModel,
             __cls_kwargs__={"table": True},
-            __table_args__={"schema": schema},
+            __table_args__={"schema": schema, "extend_existing": True},
             **definitions,
         )
-        with self.get_session() as session:
-            SQLModel.metadata._add_table(self.tables[schema][table_name])
-            SQLModel.metadata.tables[f"{schema}.{table_name}"].create(session.bind)
+        SQLModel.metadata.tables[f"{schema}.{table_name}"].create(self.engine)
+
     
     def drop_table(self, table_name: str, schema: str):
         if not self.table_exists(table_name, schema):
@@ -102,10 +102,8 @@ class DatabaseManager:
         if self.tables.get(schema, {}).get(table_name) is None:
             self.map_existing_table(table_name, schema)
         try:
-            table_to_drop = self.tables.get(schema, {}).pop(table_name)
-            with self.get_session() as session:
-                SQLModel.metadata.tables[f"{schema}.{table_name}"].drop(session.bind)
-                SQLModel.metadata.remove(f"{schema}.{table_name}")
+            self.tables.get(schema, {}).pop(table_name)
+            SQLModel.metadata.tables[f"{schema}.{table_name}"].drop(self.engine)
 
         except AttributeError as e:
             print("Something didn't work while dropping table")

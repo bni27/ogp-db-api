@@ -1,5 +1,5 @@
 import csv
-from datetime import date
+from datetime import date, datetime
 import logging
 from pathlib import Path
 from typing import Optional
@@ -21,10 +21,20 @@ COLUMN_TYPE_NOTATION = {
     str: {"suffixes": [""], "prefixes": []},
 }
 STANDARD_DAY = "-07-02"
+DATE_FORMAT = ["%Y-%m-%d"]
 PRIMARY_KEYS = {"project_id", "sample"}
 
 _logger = logging.getLogger(__name__)
 
+def type_cast(column: str, value: str) -> int | bool | date | float | str:
+    dtype = data_type(column)
+    if dtype in [int, float]:
+        return dtype(value)
+    if dtype == bool:
+        return value.lower() in ['y', 'yes', 't', 'true', 'on', '1']
+    if dtype == date:
+        return datetime.strptime(value, DATE_FORMAT).date()
+    return value
 
 def data_type(header: str) -> type:
     lower_header = header.lower()
@@ -63,9 +73,9 @@ def load_raw_data(file_path: Path, db: DatabaseManager, verified: bool = True):
         col_desc, dtypes = column_details(headers)
         db.create_new_table(table_name, schema, col_desc)
         with db.get_session() as session:
-            session.add(db.tables[schema][table_name].model_validate_strings({k: v for k, v in first_row.items() if v != ""}))
+            session.add(db.tables[schema][table_name].model_validate_strings({k: type_cast(k, v) for k, v in first_row.items() if v != ""}))
             for row in data:
-                session.add(db.tables[schema][table_name].model_validate_strings({k: v for k, v in row.items() if v != ""}))
+                session.add(db.tables[schema][table_name].model_validate_strings({k: type_cast(k, v) for k, v in row.items() if v != ""}))
             session.commit()
             
     return f"{schema}.{table_name}"
