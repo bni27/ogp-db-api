@@ -50,10 +50,10 @@ def column_details(headers: list[str]) -> dict[str, tuple[type, Field]]:
 def load_raw_data(file_path: Path, db: DatabaseManager):
     table_name = file_path.stem
     schema = f"raw_{file_path.parent.parent.stem}"
-    if db.tables.get(schema, {}).get(table_name) is None:
-        _logger.info(f"Adding existing table: {schema}.{table_name} to DB manager.")
-        db.map_existing_table(table_name, schema)
     if db.table_exists(table_name, schema):
+        if db.tables.get(schema, {}).get(table_name) is None:
+            _logger.info(f"Adding existing table: {schema}.{table_name} to DB manager.")
+            db.map_existing_table(table_name, schema)
         db.drop_table(table_name, schema)
     with open(file_path, "r", encoding="utf-8-sig", newline='') as f:
         data = csv.DictReader(f)
