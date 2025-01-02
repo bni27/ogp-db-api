@@ -104,6 +104,7 @@ class DatabaseManager:
             table_to_drop = self.tables.get(schema, {}).pop(table_name)
             with self.get_session() as session:
                 SQLModel.metadata.tables[f"{schema}.{table_name}"].drop(session.bind)
+                SQLModel.metadata.remove(f"{schema}.{table_name}")
 
         except AttributeError as e:
             print("Something didn't work while dropping table")
