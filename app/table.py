@@ -1,12 +1,18 @@
 from contextlib import contextmanager
 from os import environ
-from typing import Annotated, Optional
+from typing import Annotated, Any, Optional
 
 from fastapi import Depends
 from google.cloud.sql.connector import Connector
-from pydantic import create_model
+from pydantic import BaseModel, create_model
 from sqlalchemy import inspect, MetaData, Table, Engine
 from sqlmodel import Field, Session, SQLModel, create_engine, select
+
+
+class Record(BaseModel):
+    project_id: str
+    sample: str
+    data: dict[str, Any]
 
 
 # build connection (for creator argument of connection pool)

@@ -1,11 +1,8 @@
 import logging
-from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, HTTPException, status, UploadFile
-from fastapi.responses import FileResponse
-from sqlmodel import select
+from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.auth import AuthLevel, User, validate_api_key
+from app.auth import User, validate_api_key
 from app.filesys import (
     build_asset_path,
     build_raw_file_path,
@@ -13,11 +10,10 @@ from app.filesys import (
     get_data_files,
     get_directories,
 )
-from app.operations import load_raw_data, drop_raw_table, delete_record_from_file
-from app.pg import Record, row_count, select_data
+from app.operations import load_raw_data, drop_raw_table, delete_record_from_file, update_record_in_file
 from app.pg import DateFormatError, DuplicateHeaderError, PrimaryKeysMissingError
-from app.sql import prod_table, raw_schema, stage_schema
-from app.table import DB_MGMT
+from app.sql import raw_schema
+from app.table import DB_MGMT, Record
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -161,3 +157,30 @@ def delete_raw_record(
             session.rollback()
 
     return status.HTTP_204_NO_CONTENT
+
+
+@router.post("/{table_name}/record")
+def update_raw_record(
+    table_name: str,
+    db: DB_MGMT,
+    record: Record,
+    verified: bool = True,
+    authenticated_user: User = Depends(validate_api_key),
+):
+    authenticated_user.check_privilege()
+    try:
+        row = db.select_by_id(table_name, raw_schema(verified), record.project_id, record.sample)
+    except StopIteration:
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project with project_id: {record.project_id}, and sample: {record.sample} could not be found in table: {raw_schema(verified)}.{table_name}"
+        )
+    with db.get_session() as session:
+        try:
+            row.sqlmodel_update(record.data)
+            session.add(row)
+            file_path = find_file(table_name, verified)
+            update_record_in_file(file_path, record.project_id, record.sample, record.data)
+            session.commit()
+        except:
+            session.rollback()
