@@ -27,7 +27,9 @@ def update_stage(
     authenticated_user: User = Depends(validate_api_key),
 ):
     authenticated_user.check_privilege()
-    return [r for r in stage_data(asset_class, db, verified)]
+    records = stage_data(asset_class, db, verified)
+    print(records)
+    return [r for r in records]
 
 
 # @router.delete("/assetClasses/{asset_class}/stage")
