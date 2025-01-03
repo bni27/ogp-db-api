@@ -167,4 +167,4 @@ def stage_data(asset_class: str,  db: DatabaseManager, verified: bool = True):
     union_stmt = union(*[select(db.tables[raw_schema(verified)][table]) for table in tables])
     with db.get_session() as session:
         data = session.exec(union_stmt)
-        return data.fetch_all()
+        return data.all()
