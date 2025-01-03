@@ -167,6 +167,7 @@ def update_raw_record(
     verified: bool = True,
     authenticated_user: User = Depends(validate_api_key),
 ):
+    print(record)
     authenticated_user.check_privilege()
     try:
         row = db.select_by_id(table_name, raw_schema(verified), record.project_id, record.sample)
@@ -178,6 +179,7 @@ def update_raw_record(
     with db.get_session() as session:
         try:
             row.sqlmodel_update(record.data)
+            print(row)
             session.add(row)
             file_path = find_file(table_name, verified)
             update_record_in_file(file_path, record.project_id, record.sample, record.data)
