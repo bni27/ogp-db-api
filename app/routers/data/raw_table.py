@@ -209,7 +209,7 @@ def add_raw_record(
         pass
     with db.get_session() as session:
         try:
-            row.sqlmodel_update(record.data)
+            row = db.tables[raw_schema(verified)][table_name]({**record.data, "project_id": record.project_id, "sample":record.sample})
             session.add(row)
             file_path = find_file(table_name, verified)
             add_record_in_file(file_path, record.project_id, record.sample, record.data)
@@ -219,4 +219,8 @@ def add_raw_record(
             logger.error(f"Unable to update record in {raw_schema(verified)}.{table_name}")
             logger.exception(e)
             session.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST
+                detail=e
+            )
     return status.HTTP_204_NO_CONTENT
