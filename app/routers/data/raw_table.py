@@ -182,5 +182,6 @@ def update_raw_record(
             file_path = find_file(table_name, verified)
             update_record_in_file(file_path, record.project_id, record.sample, record.data)
             session.commit()
+            session.refresh(row)
         except:
             session.rollback()
