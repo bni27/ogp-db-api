@@ -15,7 +15,7 @@ from app.routers.data import (
     raw_table,
     # record,
     # reference,
-    # stage_table,
+    stage_table,
 )
 
 
@@ -47,11 +47,11 @@ router.include_router(
 #     prefix="/reference",
 #     dependencies=[Depends(validate_api_key)],
 # )
-# router.include_router(
-#     stage_table.router,
-#     prefix="/stageTable",
-#     dependencies=[Depends(validate_api_key)],
-# )
+router.include_router(
+    stage_table.router,
+    prefix="/stageTable",
+    dependencies=[Depends(validate_api_key)],
+)
 
 
 @router.get("/")

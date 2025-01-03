@@ -4,9 +4,10 @@ import logging
 from pathlib import Path
 from typing import Any, Optional
 
-from sqlmodel import Field
+from sqlmodel import Field, select, union
 
-from app.sql import raw_schema
+from app.filesys import get_data_files
+from app.sql import raw_schema, stage_schema
 from app.table import DatabaseManager
 
 
@@ -153,3 +154,23 @@ def add_record_in_file(
     with open(file_path, "a", encoding="utf-8-sig", newline="") as f:
         w = DictWriter(f, fieldnames=fieldnames)
         w.writerow({**data, "project_id": project_id, "sample": sample})
+
+
+def stage_data(asset_class: str,  db: DatabaseManager, verified: bool = True):
+    # get all raw tables of the asset class
+    tables = [f.stem for f in get_data_files(asset_class, verified)]
+    for table in tables:
+        db.map_existing_table(table, raw_schema(verified))
+    schema = stage_schema(verified)
+    if db.table_exists(asset_class, schema):
+        db.drop_table(asset_class, schema)
+    union_stmt = union(*[select(db.tables[raw_schema(verified)][table]) for table in tables])
+    with db.get_session as session:
+        data = session.exec(union_stmt)
+        return data.all()
+
+        
+
+        create_table_from_select(
+            cur, asset_class, build_stage_statement(tables), schema
+        )
