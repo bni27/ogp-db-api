@@ -10,7 +10,7 @@ from app.filesys import (
     get_data_files,
     get_directories,
 )
-from app.operations import load_raw_data, drop_raw_table, delete_record_from_file, update_record_in_file
+from app.operations import add_record_in_file, load_raw_data, drop_raw_table, delete_record_from_file, update_record_in_file
 from app.pg import DateFormatError, DuplicateHeaderError, PrimaryKeysMissingError
 from app.sql import raw_schema
 from app.table import DB_MGMT, Record
@@ -190,7 +190,7 @@ def update_raw_record(
     return status.HTTP_204_NO_CONTENT
 
 
-@router.put("/{table_name}/record")
+@router.post("/{table_name}/record")
 def add_raw_record(
     table_name: str,
     db: DB_MGMT,
