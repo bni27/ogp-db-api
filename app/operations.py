@@ -100,14 +100,14 @@ def delete_record_from_file(file_path: Path, project_id: str, sample: str):
 
 def update_record_in_file(file_path: Path, project_id: str, sample: str, data: dict[str, Any]):
     with open(file_path, 'r', encoding="utf-8-sig", newline="") as f:
-        data = [r for r in DictReader(f)]
-    fieldnames = data[0].keys()
-    if len([r for r in data if r["project_id"] == project_id and r["sample"] == sample]) == 0:
+        rows = [r for r in DictReader(f)]
+    fieldnames = rows[0].keys()
+    if len([r for r in rows if r["project_id"] == project_id and r["sample"] == sample]) == 0:
         raise ValueError("Record does not exist.")
     with open(file_path, 'w', encoding="utf-8-sig", newline="") as f:
         w = DictWriter(f, fieldnames=fieldnames)
         w.writeheader()
-        for r in data:
+        for r in rows:
             if r["project_id"] == project_id and r["sample"] == sample:
                 r.update(data)
             w.writerow(r)

@@ -185,5 +185,7 @@ def update_raw_record(
             update_record_in_file(file_path, record.project_id, record.sample, record.data)
             session.commit()
             session.refresh(row)
-        except:
+        except Exception as e:
+            logger.error(f"Unable to update record in {raw_schema(verified)}.{table_name}")
+            logger.exception(e)
             session.rollback()
