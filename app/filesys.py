@@ -1,3 +1,4 @@
+from csv import DictReader, DictWriter
 from os import environ
 from pathlib import Path
 from typing import Generator
@@ -49,3 +50,10 @@ def get_directories(
     verified: bool = False,
 ) -> Generator[Path, None, None]:
     return (d for d in build_verified_path(verified).iterdir() if d.is_dir())
+
+
+def find_file(table_name: str, verified: bool = False) -> Path:
+    for d in get_directories(verified):
+        for f in get_data_files(d, verified):
+            if f.stem == table_name:
+                return build_raw_file_path(f, d, verified)

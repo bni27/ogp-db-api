@@ -49,3 +49,7 @@ def delete_stage_table(asset_class: str, verified: bool = True):
 
 def union_prod(verified: bool = True):
     union_all_in_schema(stage_schema(verified), prod_table(verified), "prod")
+
+
+def update_reference(table: str) -> None:
+    pass

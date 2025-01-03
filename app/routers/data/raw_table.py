@@ -9,10 +9,11 @@ from app.auth import AuthLevel, User, validate_api_key
 from app.filesys import (
     build_asset_path,
     build_raw_file_path,
+    find_file,
     get_data_files,
     get_directories,
 )
-from app.operations import load_raw_data, drop_raw_table
+from app.operations import load_raw_data, drop_raw_table, delete_record_from_file
 from app.pg import Record, row_count, select_data
 from app.pg import DateFormatError, DuplicateHeaderError, PrimaryKeysMissingError
 from app.sql import prod_table, raw_schema, stage_schema
@@ -100,13 +101,6 @@ def get_raw_table(
     return db.select_from_table(table_name, raw_schema(verified))
 
 
-
-# @router.post("/{table_name}")
-# def create_raw_table(headers):
-#     # Initialize new raw table with no records
-#     pass
-
-
 @router.delete("/{table_name}")
 def delete_raw(
     table_name: str,
@@ -137,3 +131,33 @@ def get_raw_record(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Project with project_id: {project_id}, and sample: {sample} could not be found in table: {raw_schema(verified)}.{table_name}"
         )
+
+
+@router.delete("/{table_name}/record")
+def delete_raw_record(
+    table_name: str,
+    db: DB_MGMT,
+    project_id: str,
+    sample: str,
+    verified: bool = True,
+    authenticated_user: User = Depends(validate_api_key),
+):
+    authenticated_user.check_privilege()
+    try:
+        record = db.select_by_id(table_name, raw_schema(verified), project_id, sample)
+    except StopIteration:
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project with project_id: {project_id}, and sample: {sample} could not be found in table: {raw_schema(verified)}.{table_name}"
+        )
+    
+    with db.get_session() as session:
+        try:
+            session.delete(record)
+            file_path = find_file(table_name, verified)
+            delete_record_from_file(file_path, project_id, sample)
+            session.commit()
+        except:
+            session.rollback()
+
+    return status.HTTP_204_NO_CONTENT

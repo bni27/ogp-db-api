@@ -1,4 +1,4 @@
-import csv
+from csv import DictReader, DictWriter
 from datetime import date, datetime
 import logging
 from pathlib import Path
@@ -66,7 +66,7 @@ def load_raw_data(file_path: Path, db: DatabaseManager, verified: bool = True):
             db.map_existing_table(table_name, schema)
         db.drop_table(table_name, schema)
     with open(file_path, "r", encoding="utf-8-sig", newline="") as f:
-        data = csv.DictReader(f)
+        data = DictReader(f)
         first_row = next(data)
         headers = [k for k in first_row.keys()]
         col_desc = column_details(headers)
@@ -81,3 +81,18 @@ def load_raw_data(file_path: Path, db: DatabaseManager, verified: bool = True):
 
 def drop_raw_table(table_name: str, verified: bool, db: DatabaseManager):
     db.drop_table(table_name, raw_schema(verified))
+
+
+def delete_record_from_file(file_path: Path, project_id: str, sample: str):
+    with open(file_path, 'r', encoding="utf-8-sig", newline="") as f:
+        data = [r for r in DictReader(f)]
+    fieldnames = data[0].keys()
+    if len([r for r in data if r["project_id"] == project_id and r["sample"] == sample]) == 0:
+        raise ValueError("Record does not exist.")
+    with open(file_path, 'w', encoding="utf-8-sig", newline="") as f:
+        w = DictWriter(f, fieldnames=fieldnames)
+        w.writeheader()
+        for r in data:
+            if r["project_id"] == project_id and r["sample"] == sample:
+                continue
+            w.writerow(r)
