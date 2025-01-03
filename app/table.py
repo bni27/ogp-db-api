@@ -111,11 +111,19 @@ class DatabaseManager:
     
     def select_from_table(self, table_name: str, schema: str) -> list[SQLModel]:
         self.map_existing_table(table_name, schema)
-
         with self.get_session() as session:
-            data = session.exec(select(self.tables[schema][table_name]))
+            _tbl = self.tables[schema][table_name]
+            data = session.exec(select(_tbl))
             return data.all()
-        
+    
+    def select_by_id(self, table_name: str, schema: str, project_id: str, sample: str) -> SQLModel:
+        self.map_existing_table(table_name, schema)
+        _tbl = self.tables[schema][table_name]
+        with self.get_session() as session:
+            stmt = select(_tbl).where(_tbl.project_id == project_id, _tbl.sample == sample)
+            data = session.exec(stmt)
+            return next(data)
+
 
 database_manager = DatabaseManager()
 

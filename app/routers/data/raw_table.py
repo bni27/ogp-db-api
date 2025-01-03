@@ -118,3 +118,22 @@ def delete_raw(
     authenticated_user.check_privilege()
     drop_raw_table(table_name, verified, db)
     return status.HTTP_204_NO_CONTENT
+
+
+@router.get("/{table_name}/record")
+def get_raw_record(
+    table_name: str,
+    db: DB_MGMT,
+    project_id: str,
+    sample: str,
+    verified: bool = True,
+    authenticated_user: User = Depends(validate_api_key),
+):
+    authenticated_user.check_privilege()
+    try:
+        return db.select_by_id(table_name, raw_schema(verified), project_id, sample)
+    except StopIteration:
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project with project_id: {project_id}, and sample: {sample} could not be found in table: {raw_schema(verified)}.{table_name}"
+        )
