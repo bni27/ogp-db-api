@@ -26,15 +26,17 @@ PRIMARY_KEYS = {"project_id", "sample"}
 
 _logger = logging.getLogger(__name__)
 
+
 def type_cast(column: str, value: str) -> int | bool | date | float | str:
     dtype = data_type(column)
     if dtype in [int, float]:
         return dtype(value)
     if dtype == bool:
-        return value.lower() in ['y', 'yes', 't', 'true', 'on', '1']
+        return value.lower() in ["y", "yes", "t", "true", "on", "1"]
     if dtype == date:
         return datetime.strptime(value, DATE_FORMAT).date()
     return value
+
 
 def data_type(header: str) -> type:
     lower_header = header.lower()
@@ -45,14 +47,16 @@ def data_type(header: str) -> type:
             return dtype
 
 
-def column_details(headers: list[str]) -> tuple[dict[str, tuple[type, Field]], dict[str, type]]:
+def column_details(
+    headers: list[str],
+) -> tuple[dict[str, tuple[type, Field]], dict[str, type]]:
     details = {}
     for header in headers:
         pk = header in PRIMARY_KEYS
         dtype = data_type(header)
         details[header] = (
             dtype if pk else Optional[dtype],
-            Field(default="" if pk else None, primary_key=pk)
+            Field(default="" if pk else None, primary_key=pk),
         )
     return details
 
@@ -72,9 +76,17 @@ def load_raw_data(file_path: Path, db: DatabaseManager, verified: bool = True):
         col_desc = column_details(headers)
         db.create_new_table(table_name, schema, col_desc)
         with db.get_session() as session:
-            session.add(db.tables[schema][table_name](**{k: type_cast(k, v) for k, v in first_row.items() if v != ""}))
+            session.add(
+                db.tables[schema][table_name](
+                    **{k: type_cast(k, v) for k, v in first_row.items() if v != ""}
+                )
+            )
             for row in data:
-                session.add(db.tables[schema][table_name](**{k: type_cast(k, v) for k, v in row.items() if v != ""}))
+                session.add(
+                    db.tables[schema][table_name](
+                        **{k: type_cast(k, v) for k, v in row.items() if v != ""}
+                    )
+                )
             session.commit()
     return f"{schema}.{table_name}"
 
@@ -84,12 +96,17 @@ def drop_raw_table(table_name: str, verified: bool, db: DatabaseManager):
 
 
 def delete_record_from_file(file_path: Path, project_id: str, sample: str):
-    with open(file_path, 'r', encoding="utf-8-sig", newline="") as f:
+    with open(file_path, "r", encoding="utf-8-sig", newline="") as f:
         data = [r for r in DictReader(f)]
     fieldnames = data[0].keys()
-    if len([r for r in data if r["project_id"] == project_id and r["sample"] == sample]) == 0:
+    if (
+        len(
+            [r for r in data if r["project_id"] == project_id and r["sample"] == sample]
+        )
+        == 0
+    ):
         raise ValueError("Record does not exist.")
-    with open(file_path, 'w', encoding="utf-8-sig", newline="") as f:
+    with open(file_path, "w", encoding="utf-8-sig", newline="") as f:
         w = DictWriter(f, fieldnames=fieldnames)
         w.writeheader()
         for r in data:
@@ -98,16 +115,41 @@ def delete_record_from_file(file_path: Path, project_id: str, sample: str):
             w.writerow(r)
 
 
-def update_record_in_file(file_path: Path, project_id: str, sample: str, data: dict[str, Any]):
-    with open(file_path, 'r', encoding="utf-8-sig", newline="") as f:
+def update_record_in_file(
+    file_path: Path, project_id: str, sample: str, data: dict[str, Any]
+):
+    with open(file_path, "r", encoding="utf-8-sig", newline="") as f:
         rows = [r for r in DictReader(f)]
     fieldnames = rows[0].keys()
-    if len([r for r in rows if r["project_id"] == project_id and r["sample"] == sample]) == 0:
+    if (
+        len(
+            [r for r in rows if r["project_id"] == project_id and r["sample"] == sample]
+        )
+        == 0
+    ):
         raise ValueError("Record does not exist.")
-    with open(file_path, 'w', encoding="utf-8-sig", newline="") as f:
+    with open(file_path, "w", encoding="utf-8-sig", newline="") as f:
         w = DictWriter(f, fieldnames=fieldnames)
         w.writeheader()
         for r in rows:
             if r["project_id"] == project_id and r["sample"] == sample:
                 r.update(data)
             w.writerow(r)
+
+
+def add_record_in_file(
+    file_path: Path, project_id: str, sample: str, data: dict[str, Any]
+):
+    with open(file_path, "r", encoding="utf-8-sig", newline="") as f:
+        rows = [r for r in DictReader(f)]
+    fieldnames = rows[0].keys()
+    if (
+        len(
+            [r for r in rows if r["project_id"] == project_id and r["sample"] == sample]
+        )
+        > 0
+    ):
+        raise ValueError("Record already exists.")
+    with open(file_path, "a", encoding="utf-8-sig", newline="") as f:
+        w = DictWriter(f, fieldnames=fieldnames)
+        w.writerow({**data, "project_id": project_id, "sample": sample})

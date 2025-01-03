@@ -159,7 +159,7 @@ def delete_raw_record(
     return status.HTTP_204_NO_CONTENT
 
 
-@router.post("/{table_name}/record")
+@router.put("/{table_name}/record")
 def update_raw_record(
     table_name: str,
     db: DB_MGMT,
@@ -167,7 +167,6 @@ def update_raw_record(
     verified: bool = True,
     authenticated_user: User = Depends(validate_api_key),
 ):
-    print(record)
     authenticated_user.check_privilege()
     try:
         row = db.select_by_id(table_name, raw_schema(verified), record.project_id, record.sample)
@@ -179,7 +178,6 @@ def update_raw_record(
     with db.get_session() as session:
         try:
             row.sqlmodel_update(record.data)
-            print(row)
             session.add(row)
             file_path = find_file(table_name, verified)
             update_record_in_file(file_path, record.project_id, record.sample, record.data)
@@ -189,3 +187,36 @@ def update_raw_record(
             logger.error(f"Unable to update record in {raw_schema(verified)}.{table_name}")
             logger.exception(e)
             session.rollback()
+    return status.HTTP_204_NO_CONTENT
+
+
+@router.put("/{table_name}/record")
+def add_raw_record(
+    table_name: str,
+    db: DB_MGMT,
+    record: Record,
+    verified: bool = True,
+    authenticated_user: User = Depends(validate_api_key),
+):
+    authenticated_user.check_privilege()
+    try:
+        row = db.select_by_id(table_name, raw_schema(verified), record.project_id, record.sample)
+        return HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Project with project_id: {record.project_id}, and sample: {record.sample} already exists in: {raw_schema(verified)}.{table_name}"
+        )
+    except StopIteration:
+        pass
+    with db.get_session() as session:
+        try:
+            row.sqlmodel_update(record.data)
+            session.add(row)
+            file_path = find_file(table_name, verified)
+            add_record_in_file(file_path, record.project_id, record.sample, record.data)
+            session.commit()
+            session.refresh(row)
+        except Exception as e:
+            logger.error(f"Unable to update record in {raw_schema(verified)}.{table_name}")
+            logger.exception(e)
+            session.rollback()
+    return status.HTTP_204_NO_CONTENT
