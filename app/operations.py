@@ -165,7 +165,7 @@ def stage_data(asset_class: str,  db: DatabaseManager, verified: bool = True):
     if db.table_exists(asset_class, schema):
         db.drop_table(asset_class, schema)
     union_stmt = union(*[select(db.tables[raw_schema(verified)][table]) for table in tables])
-    with db.get_session as session:
+    with db.get_session() as session:
         data = session.exec(union_stmt)
         return data.all()
 
