@@ -102,23 +102,19 @@ def load_exchange_rate(db: DatabaseManager):
     )
     db.create_new_table("exchange_rates", "reference", col_desc)
     with db.get_session() as session:
-        num_records = 0
-        for d in tqdm(wb.data.fetch("PA.NUS.FCRF")):
-            if d["value"] is not None:
-                session.add(
-                    db.tables["reference"]["exchange_rates"](
-                        **{
-                            "country_iso3": d["economy"],
-                            "year": int(d["time"][2:]),
-                            "exchange_rate": d["value"],
-                        }
-                    )
-                )
-                num_records += 1
-            if num_records == 10:
-                print(f"COMMIT {num_records}")
-                session.commit()
-                num_records = 0
+        session.bulk_insert_mappings(
+            db.tables["reference"]["exchange_rates"],
+            [
+                {
+                    "country_iso3": d["economy"],
+                    "year": int(d["time"][2:]),
+                    "exchange_rate": d["value"],
+                }
+                for d in wb.data.fetch("PA.NUS.FCRF")
+                if d["value"] is not None
+            ],
+        )
+        session.commit()
 
 
 def load_raw_data(file_path: Path, db: DatabaseManager, verified: bool = True):
