@@ -14,7 +14,7 @@ from app.routers.data import (
     filesys,
     raw_table,
     # record,
-    # reference,
+    reference,
     stage_table,
 )
 
@@ -42,11 +42,11 @@ router.include_router(
 #     prefix="/record",
 #     dependencies=[Depends(validate_api_key)],
 # )
-# router.include_router(
-#     reference.router,
-#     prefix="/reference",
-#     dependencies=[Depends(validate_api_key)],
-# )
+router.include_router(
+    reference.router,
+    prefix="/reference",
+    dependencies=[Depends(validate_api_key)],
+)
 router.include_router(
     stage_table.router,
     prefix="/stageTable",
