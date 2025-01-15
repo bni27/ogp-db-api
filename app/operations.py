@@ -9,6 +9,7 @@ from sqlmodel import (
     and_,
     case,
     cast,
+    delete,
     Field,
     select,
     Integer,
@@ -96,11 +97,15 @@ def load_exchange_rate(db: DatabaseManager):
     if db.table_exists("exchange_rates", "reference"):
         if db.tables.get("reference", {}).get("exchange_rates") is None:
             db.map_existing_table("exchange_rates", "reference")
-        db.drop_table("exchange_rates", "reference")
-    col_desc = column_details(
-        ["country_iso3", "year", "exchange_rate"], ["country_iso3", "year"]
-    )
-    db.create_new_table("exchange_rates", "reference", col_desc)
+    with db.get_session() as session:
+        session.exec(
+            delete(db.tables["reference"]["exchange_rates"])
+        )
+        session.commit()
+
+    # col_desc = column_details(
+    #     ["country_iso3", "year", "exchange_rate"], ["country_iso3", "year"]
+    # )
     with db.get_session() as session:
         session.bulk_insert_mappings(
             db.tables["reference"]["exchange_rates"],
