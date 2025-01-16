@@ -132,7 +132,7 @@ def load_ppp_rate(db: DatabaseManager):
             session.commit()
     else:
         col_desc = column_details(["country_iso3", "year", "ppp_rate"], ["country_iso3", "year"])
-        db.create_new_table("ppp", "reference", col_desc)f
+        db.create_new_table("ppp", "reference", col_desc)
     with db.get_session() as session:
         session.bulk_insert_mappings(
             db.tables["reference"]["ppp"],
