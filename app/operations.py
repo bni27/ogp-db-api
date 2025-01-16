@@ -97,15 +97,14 @@ def load_exchange_rate(db: DatabaseManager):
     if db.table_exists("exchange_rates", "reference"):
         if db.tables.get("reference", {}).get("exchange_rates") is None:
             db.map_existing_table("exchange_rates", "reference")
-    with db.get_session() as session:
-        session.exec(
-            delete(db.tables["reference"]["exchange_rates"])
-        )
-        session.commit()
-
-    # col_desc = column_details(
-    #     ["country_iso3", "year", "exchange_rate"], ["country_iso3", "year"]
-    # )
+        with db.get_session() as session:
+            session.exec(
+                delete(db.tables["reference"]["exchange_rates"])
+            )
+            session.commit()
+    else:
+        col_desc = column_details(["country_iso3", "year", "exchange_rate"], ["country_iso3", "year"])
+        db.create_new_table("exchange_rates", "reference", col_desc)
     with db.get_session() as session:
         session.bulk_insert_mappings(
             db.tables["reference"]["exchange_rates"],
@@ -115,7 +114,35 @@ def load_exchange_rate(db: DatabaseManager):
                     "year": int(d["time"][2:]),
                     "exchange_rate": d["value"],
                 }
-                for d in wb.data.fetch("PA.NUS.FCRF")
+                for d in wb.data.fetch(EXCHANGE_RATE_TABLE)
+                if d["value"] is not None
+            ],
+        )
+        session.commit()
+
+
+def load_ppp_rate(db: DatabaseManager):
+    if db.table_exists("ppp", "reference"):
+        if db.tables.get("reference", {}).get("ppp") is None:
+            db.map_existing_table("ppp", "reference")
+        with db.get_session() as session:
+            session.exec(
+                delete(db.tables["reference"]["ppp"])
+            )
+            session.commit()
+    else:
+        col_desc = column_details(["country_iso3", "year", "ppp_rate"], ["country_iso3", "year"])
+        db.create_new_table("ppp", "reference", col_desc)f
+    with db.get_session() as session:
+        session.bulk_insert_mappings(
+            db.tables["reference"]["ppp"],
+            [
+                {
+                    "country_iso3": d["economy"],
+                    "year": int(d["time"][2:]),
+                    "ppp_rate": d["value"],
+                }
+                for d in wb.data.fetch(PPP_RATE_TABLE)
                 if d["value"] is not None
             ],
         )
