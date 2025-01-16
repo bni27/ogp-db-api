@@ -5,6 +5,7 @@ from pathlib import Path
 from tqdm import tqdm
 from typing import Any, Optional
 
+import requests
 from sqlmodel import (
     and_,
     case,
@@ -91,6 +92,45 @@ def column_details(
             Field(default="" if pk else None, primary_key=pk),
         )
     return details
+
+
+def load_gdp_deflators(db: DatabaseManager):
+    if db.table_exists("gdp_deflators", "reference"):
+        if db.tables.get("reference", {}).get("gdp_deflators") is None:
+            db.map_existing_table("gdp_deflators", "reference")
+        with db.get_session() as session:
+            session.exec(
+                delete(db.tables["reference"]["gdp_deflators"])
+            )
+            session.commit()
+    else:
+        col_desc = column_details(["country_iso3", "year", "gdp_deflator"], ["country_iso3", "year"])
+        db.create_new_table("gdp_deflators", "reference", col_desc)
+    data = []
+    for i in range(1, 3):
+        resp = requests.get(f"https://api.worldbank.org/v2/en/sources/2/series/NY.GDP.DEFL.ZS/country/all/time/all?per_page=10000&page={i}&format=json")
+        data.extend(
+            [
+                {
+                    "value": r["value"],
+                    **{v["concept"]: v["id"] for v in r["variable"]}
+                }
+                for r in resp.json()['source']['data'] if r["value"] is not None
+            ]
+        )
+    with db.get_session() as session:
+        session.bulk_insert_mappings(
+            db.tables["reference"]["gdp_deflators"],
+            [
+                {
+                    "country_iso3": d["Country"],
+                    "year": d["Time"][2:],
+                    "gdp_deflator": d["value"],
+                }
+                for d in data
+            ],
+        )
+        session.commit()
 
 
 def load_exchange_rate(db: DatabaseManager):

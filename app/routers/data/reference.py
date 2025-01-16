@@ -21,7 +21,7 @@ from app.filesys import (
 from app.pg import Record, row_count, select_data
 from app.pg import DateFormatError, DuplicateHeaderError, PrimaryKeysMissingError
 from app.sql import prod_table, stage_schema
-from app.operations import load_exchange_rate, load_ppp_rate
+from app.operations import load_exchange_rate, load_ppp_rate, load_gdp_deflators
 from app.table import DB_MGMT
 
 
@@ -54,3 +54,4 @@ def update_gdp_deflator_rate(
     authenticated_user: User = Depends(validate_api_key),
 ):
     authenticated_user.check_privilege()
+    load_gdp_deflators(db)
