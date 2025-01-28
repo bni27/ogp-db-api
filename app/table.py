@@ -74,7 +74,7 @@ class DatabaseManager:
         return {
             c.name: (
                 Optional[c.type.python_type] if c.nullable else c.type.python_type,
-                Field(default=c.default, primary_key=c.primary_key),
+                Field(default=c.default, primary_key=(c.primary_key)),
             )
             for c in table_data.columns
         }
@@ -82,7 +82,7 @@ class DatabaseManager:
     def get_all_table_names(self, schema):
         return [t for t in inspect(self.engine).get_table_names(schema)]
 
-    def map_existing_table(self, table_name: str, schema: str):
+    def map_existing_table(self, table_name: str, schema: str, view: bool = False):
         if not (self.table_exists(table_name, schema) and self.schema_exists(schema)):
             print(f"Schema: {schema} does not exist.")
             raise ValueError

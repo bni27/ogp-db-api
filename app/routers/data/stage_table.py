@@ -27,9 +27,8 @@ def update_stage(
     authenticated_user: User = Depends(validate_api_key),
 ):
     authenticated_user.check_privilege()
-    records = stage_data(asset_class, db, verified)
-    print(records)
-    return [r for r in records]
+    stage_data(asset_class, db, verified)
+    return
 
 
 # @router.delete("/assetClasses/{asset_class}/stage")
@@ -43,11 +42,11 @@ def update_stage(
 #     return status.HTTP_204_NO_CONTENT
 
 
-# @router.get("/assetClasses/{asset_class}/stage/data")
-# def get_stage_data(
-#     asset_class: str,
-#     verified: bool = True,
-#     authenticated_user: User = Depends(validate_api_key),
-# ):
-#     authenticated_user.check_privilege()
-#     return select_data(asset_class, schema=stage_schema(verified))
+@router.get("/assetClasses/{asset_class}/stage/data")
+def get_stage_data(
+    asset_class: str,
+    verified: bool = True,
+    authenticated_user: User = Depends(validate_api_key),
+):
+    authenticated_user.check_privilege()
+    return select_data(asset_class, schema=stage_schema(verified))

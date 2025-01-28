@@ -99,23 +99,23 @@ def load_gdp_deflators(db: DatabaseManager):
         if db.tables.get("reference", {}).get("gdp_deflators") is None:
             db.map_existing_table("gdp_deflators", "reference")
         with db.get_session() as session:
-            session.exec(
-                delete(db.tables["reference"]["gdp_deflators"])
-            )
+            session.exec(delete(db.tables["reference"]["gdp_deflators"]))
             session.commit()
     else:
-        col_desc = column_details(["country_iso3", "year", "gdp_deflator"], ["country_iso3", "year"])
+        col_desc = column_details(
+            ["country_iso3", "year", "gdp_deflator"], ["country_iso3", "year"]
+        )
         db.create_new_table("gdp_deflators", "reference", col_desc)
     data = []
     for i in range(1, 3):
-        resp = requests.get(f"https://api.worldbank.org/v2/en/sources/2/series/NY.GDP.DEFL.ZS/country/all/time/all?per_page=10000&page={i}&format=json")
+        resp = requests.get(
+            f"https://api.worldbank.org/v2/en/sources/2/series/NY.GDP.DEFL.ZS/country/all/time/all?per_page=10000&page={i}&format=json"
+        )
         data.extend(
             [
-                {
-                    "value": r["value"],
-                    **{v["concept"]: v["id"] for v in r["variable"]}
-                }
-                for r in resp.json()['source']['data'] if r["value"] is not None
+                {"value": r["value"], **{v["concept"]: v["id"] for v in r["variable"]}}
+                for r in resp.json()["source"]["data"]
+                if r["value"] is not None
             ]
         )
     with db.get_session() as session:
@@ -138,12 +138,12 @@ def load_exchange_rate(db: DatabaseManager):
         if db.tables.get("reference", {}).get("exchange_rates") is None:
             db.map_existing_table("exchange_rates", "reference")
         with db.get_session() as session:
-            session.exec(
-                delete(db.tables["reference"]["exchange_rates"])
-            )
+            session.exec(delete(db.tables["reference"]["exchange_rates"]))
             session.commit()
     else:
-        col_desc = column_details(["country_iso3", "year", "exchange_rate"], ["country_iso3", "year"])
+        col_desc = column_details(
+            ["country_iso3", "year", "exchange_rate"], ["country_iso3", "year"]
+        )
         db.create_new_table("exchange_rates", "reference", col_desc)
     with db.get_session() as session:
         session.bulk_insert_mappings(
@@ -166,12 +166,12 @@ def load_ppp_rate(db: DatabaseManager):
         if db.tables.get("reference", {}).get("ppp") is None:
             db.map_existing_table("ppp", "reference")
         with db.get_session() as session:
-            session.exec(
-                delete(db.tables["reference"]["ppp"])
-            )
+            session.exec(delete(db.tables["reference"]["ppp"]))
             session.commit()
     else:
-        col_desc = column_details(["country_iso3", "year", "ppp_rate"], ["country_iso3", "year"])
+        col_desc = column_details(
+            ["country_iso3", "year", "ppp_rate"], ["country_iso3", "year"]
+        )
         db.create_new_table("ppp", "reference", col_desc)
     with db.get_session() as session:
         session.bulk_insert_mappings(
@@ -390,21 +390,101 @@ def add_schedule_columns(table):
     return select(table.subquery(), *new_columns)
 
 
-def convert_costs(table, db):
-    cost_columns = []
-    for c in table.selected_columns:
-        if "_cost_local_" in c.name:
-            col_stem = (
-                c.name.removesuffix("_year")
-                .removesuffix("_currency")
-                .removesuffix("_millions")
-                .removesuffix("_local")
-            )
-            if col_stem in cost_columns:
+def convert_costs_gdp(table, db):
+    table_subquery = table.subquery()
+    db.map_existing_table("gdp_deflators", "reference")
+    db.map_existing_table("currency_exchange_rates", "reference")
+    deflator_table = db.tables["reference"]["gdp_deflators"]
+    exchange_table = db.tables["reference"]["currency_exchange_rates"]
+    max_year = select(func.max(deflator_table.year).label("year")).scalar_subquery()
+    latest_year_deflators = (
+        select(deflator_table).filter(deflator_table.year == max_year).subquery()
+    )
+    latest_exchange_rates = (
+        select(exchange_table).filter(exchange_table.year == max_year).subquery()
+    )
+    selected_column_names = [c.name for c in table.selected_columns]
+    cost_col_stems = []
+    for c in selected_column_names:
+        if c.endswith("_cost_millions"):
+            col_stem = c.removesuffix("_millions")
+            if col_stem in cost_col_stems:
                 continue
-            val_col = f"{col_stem}_local_millions"
-            yr_col = f"{col_stem}_local_year"
-            join(table.subquery(), db.tables["reference"]["exchange_rates"])
+            val_col_name = c
+            cur_col_name = f"{col_stem}_currency"
+            yr_col_name = f"{col_stem}_year"
+            if (
+                cur_col_name in selected_column_names
+                and yr_col_name in selected_column_names
+            ):
+                cost_col_stems.append(col_stem)
+    with_latest_deflators = select(
+        *table_subquery.columns,
+        latest_year_deflators.c.gdp_deflator.label(f"gdp_deflator_latest"),
+    ).select_from(
+        join(
+            table_subquery,
+            latest_year_deflators,
+            table_subquery.c.country_iso3 == latest_year_deflators.c.country_iso3,
+            isouter=True,
+        )
+    )
+    new_table = with_latest_deflators
+    for cost_col_stem in cost_col_stems:
+        int_table = select(
+            *new_table.columns,
+            deflator_table.gdp_deflator.label(f"gdp_deflator_{cost_col_stem}"),
+        ).select_from(
+            join(
+                new_table,
+                deflator_table,
+                and_(
+                    new_table.c.country_iso3 == deflator_table.country_iso3,
+                    new_table.c[f"{cost_col_stem}_year"] == deflator_table.year,
+                ),
+                isouter=True,
+            )
+        )
+        new_table = select(
+            *int_table.columns,
+            latest_exchange_rates.c.exchange_rate.label(
+                f"exchange_rate_{cost_col_stem}"
+            ),
+        ).select_from(
+            join(
+                int_table,
+                latest_exchange_rates,
+                int_table.c[f"{cost_col_stem}_currency"]
+                == latest_exchange_rates.c.currency,
+                isouter=True,
+            )
+        )
+    updated_table = select(
+        *new_table.columns,
+        *[
+            (
+                new_table.c[f"{cost_col_stem}_millions"]
+                * cast(new_table.c.gdp_deflator_latest, Float)
+                * new_table.c[f"exchange_rate_{cost_col_stem}"]
+                / new_table.c[f"gdp_deflator_{cost_col_stem}"]
+            ).label(f"{cost_col_stem}_usd_gdp_latest_millions")
+            for cost_col_stem in cost_col_stems
+        ],
+    ).select_from(new_table)
+    ratio_stems = []
+    for cost_col_stem in cost_col_stems:
+        if cost_col_stem.startswith("est_"):
+            ratio_stems.append(cost_col_stem.removeprefix("est_"))
+    return select(
+        *updated_table.columns,
+        *[
+            (
+                updated_table.c[f"act_cost_usd_gdp_latest_millions"]
+                / updated_table.c[f"est_{ratio_stem}_usd_gdp_latest_millions"]
+            ).label(f"{ratio_stem}_usd_gdp_ratio")
+            for ratio_stem in ratio_stems
+        ],
+    )
 
 
 def schedule_ratio(table):
@@ -427,36 +507,45 @@ def schedule_ratio(table):
     )
 
 
+# def latest_gdp_cost(table):
+#     new_columns = []
+#     for c in table.selected_columns:
+#         if c.name.endswith("_local_cost_millions"):
+#             year_col = c.name.removesuffix("_local_cost_millions") + "_local_cost_year"
+#             currency_col = (
+#                 c.name.removesuffix("_local_cost_millions") + "_local_cost_currency"
+#             )
+#             gdp_col = f"gdp_deflator"
+#             new_columns.append(
+#                 (c / cast(gdp_col, Float)).label(
+#                     c.name.removesuffix("_local_millions") + "_usd_millions"
+#                 )
+#             )
+
+
 def stage_data(asset_class: str, db: DatabaseManager, verified: bool = True):
     # get all raw tables of the asset class
-    tables = [f.stem for f in get_data_files(asset_class, verified)]
-    for table in tables:
+    # tables = [f.stem for f in get_data_files(asset_class, verified)]
+    for table in ["port"]:
         db.map_existing_table(table, raw_schema(verified))
     schema = stage_schema(verified)
     if db.table_exists(asset_class, schema):
         db.drop_table(asset_class, schema)
     union_stmt = union(
-        *[select(db.tables[raw_schema(verified)][table]) for table in tables]
+        *[select(db.tables[raw_schema(verified)][table]) for table in ["port"]]
     )
     date_statement = date_year_statement(union_stmt)
-    dur_statement = duration_statement(date_statement).subquery()
-    db.map_existing_table("gdp_deflators", "reference")
-    deflator_table = db.tables["reference"]["gdp_deflators"]
-    max_year = select(func.max(deflator_table.year).label("year")).scalar_subquery()
-    latest_year_deflators = (
-        select(deflator_table).filter(deflator_table.year == max_year).subquery()
-    )
-    with_deflators = join(
-        dur_statement,
-        latest_year_deflators,
-        dur_statement.c.country_iso3 == latest_year_deflators.c.country_code,
-    ).select()
+    dur_statement = duration_statement(date_statement)
+    dur_ratio_statement = schedule_ratio(dur_statement)
+    costs_gdp = convert_costs_gdp(dur_ratio_statement, db)
 
     with db.get_session() as session:
-        session.exec(CreateTableAs(f"{schema}.{asset_class}", union_stmt))
+        session.exec(CreateTableAs(asset_class, schema, costs_gdp))
         session.commit()
         session.exec(
             text(
-                f"""ALTER TABLE "{schema}"."port" ADD PRIMARY KEY (project_id, sample);"""
+                f"""ALTER TABLE "{schema}"."{asset_class}" ADD PRIMARY KEY (project_id, sample);"""
             )
         )
+        session.commit()
+    return 
