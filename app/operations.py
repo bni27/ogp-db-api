@@ -526,14 +526,14 @@ def schedule_ratio(table):
 
 def stage_data(asset_class: str, db: DatabaseManager, verified: bool = True):
     # get all raw tables of the asset class
-    # tables = [f.stem for f in get_data_files(asset_class, verified)]
-    for table in ["port"]:
+    tables = [f.stem for f in get_data_files(asset_class, verified)]
+    for table in tables:
         db.map_existing_table(table, raw_schema(verified))
     schema = stage_schema(verified)
     if db.table_exists(asset_class, schema):
         db.drop_table(asset_class, schema)
     union_stmt = union(
-        *[select(db.tables[raw_schema(verified)][table]) for table in ["port"]]
+        *[select(db.tables[raw_schema(verified)][table]) for table in tables]
     )
     date_statement = date_year_statement(union_stmt)
     dur_statement = duration_statement(date_statement)
