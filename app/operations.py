@@ -557,15 +557,15 @@ def union_all_tables_in_schema(schema: str, db: DatabaseManager):
     all_columns = set()
     for table in tables:
         db.map_existing_table(table, schema)
-        all_columns.update(c.name for c in select(db.tables[schema][table]).columns)
+    selected_tables = [select(db.tables[schema][table]) for table in tables]
+    all_columns.update(c.name for t in selected_tables for c in t.columns)
     union_queries = []
-    for table in tables:
-        columns = select(db.tables[schema][table]).columns
+    for table in selected_tables:
         select_columns = [
-            columns.get(col, literal_column("NULL").label(col)) for col in all_columns
+            table.columns.get(col, literal_column("NULL").label(col)) for col in all_columns
         ]
-        union_queries.append(select(*select_columns).select_from(db.tables[schema][table]))
-    return select(union_all(*union_queries).subquery())
+        union_queries.append(select(*select_columns).select_from(table))
+    return select(union(*union_queries).subquery())
 
 
 def update_prod(db: DatabaseManager, verified: bool = True):
