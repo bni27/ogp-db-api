@@ -31,15 +31,16 @@ def update_stage(
     return
 
 
-# @router.delete("/assetClasses/{asset_class}/stage")
-# def delete_stage(
-#     asset_class: str,
-#     verified: bool = True,
-#     authenticated_user: User = Depends(validate_api_key),
-# ):
-#     authenticated_user.check_privilege()
-#     delete_stage_table(asset_class, verified)
-#     return status.HTTP_204_NO_CONTENT
+@router.delete("/assetClasses/{asset_class}/stage")
+def delete_stage(
+    asset_class: str,
+    db: DB_MGMT,
+    verified: bool = True,
+    authenticated_user: User = Depends(validate_api_key),
+):
+    authenticated_user.check_privilege()
+    db.drop_table(asset_class, stage_schema(verified))
+    return status.HTTP_204_NO_CONTENT
 
 
 @router.get("/assetClasses/{asset_class}/stage/data")
@@ -50,3 +51,22 @@ def get_stage_data(
 ):
     authenticated_user.check_privilege()
     return select_data(asset_class, schema=stage_schema(verified))
+
+
+@router.get("/{table_name}/record")
+def get_staged_record(
+    asset_class: str,
+    db: DB_MGMT,
+    project_id: str,
+    sample: str,
+    verified: bool = True,
+    authenticated_user: User = Depends(validate_api_key),
+):
+    authenticated_user.check_privilege()
+    try:
+        return db.select_by_id(asset_class, stage_schema(verified), project_id, sample)
+    except StopIteration:
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Project with project_id: {project_id}, and sample: {sample} could not be found in table: {stage_schema(verified)}.{asset_class}",
+        )
