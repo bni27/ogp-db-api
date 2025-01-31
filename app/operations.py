@@ -20,6 +20,7 @@ from sqlmodel import (
     null,
     true,
     union,
+    union_all,
     extract,
     func,
     Date,
@@ -30,7 +31,7 @@ from sqlmodel import (
 import wbgapi as wb
 
 from app.filesys import get_data_files
-from app.sql import raw_schema, stage_schema
+from app.sql import prod_table, raw_schema, stage_schema
 from app.table import CreateTableAs, DatabaseManager
 
 EXCHANGE_RATE_TABLE = "PA.NUS.FCRF"
@@ -548,4 +549,41 @@ def stage_data(asset_class: str, db: DatabaseManager, verified: bool = True):
             )
         )
         session.commit()
-    return 
+    return
+
+
+def union_all_tables_in_schema(schema: str, db: DatabaseManager):
+    tables = db.get_all_table_names(schema)
+    all_columns = set()
+    for table in tables:
+        db.map_existing_table(table, schema)
+        all_columns.update(c.name for c in select(db.tables[schema][table]).columns)
+    union_queries = []
+    for table in tables:
+        columns = select(db.tables[schema][table]).columns
+        select_columns = [
+            columns.get(col, literal_column("NULL").label(col)) for col in all_columns
+        ]
+        union_queries.append(select(*select_columns).select_from(db.tables[schema][table]))
+    return select(union_all(*union_queries).subquery())
+
+
+def update_prod(db: DatabaseManager, verified: bool = True):
+    if db.table_exists(prod_table(verified), "prod"):
+        db.drop_table(prod_table(verified), "prod")
+    with db.get_session() as session:
+        session.exec(
+            CreateTableAs(
+                prod_table(verified),
+                "prod",
+                union_all_tables_in_schema(stage_schema(verified), db),
+            )
+        )
+        session.commit()
+        session.exec(
+            text(
+                f"""ALTER TABLE "prod"."{prod_table(verified)}" ADD PRIMARY KEY (project_id, sample);"""
+            )
+        )
+        session.commit()
+    return

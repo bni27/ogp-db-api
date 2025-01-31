@@ -6,9 +6,13 @@ from fastapi import Depends
 from google.cloud.sql.connector import Connector
 from pydantic import BaseModel, create_model
 from sqlalchemy import inspect, MetaData, Table, Engine
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext import compiler
 from sqlalchemy.schema import DDLElement
-from sqlmodel import Field, Session, SQLModel, create_engine, select
+from sqlmodel import Field, Session, SQLModel, create_engine, select, String, Column
+
+
+PRIMARY_KEYS = ["project_id", "sample"]
 
 
 class Record(BaseModel):
@@ -71,18 +75,34 @@ class DatabaseManager:
         metadata = MetaData(schema)
         metadata.reflect(self.engine)
         table_data = Table(table_name, metadata)
-        return {
+        details = {
             c.name: (
                 Optional[c.type.python_type] if c.nullable else c.type.python_type,
-                Field(default=c.default, primary_key=(c.primary_key)),
+                (
+                    Field(
+                        default=None,
+                        sa_column=Column(postgresql.ARRAY(String())),
+                    )
+                    if c.type.python_type == list
+                    else Field(default=c.default, primary_key=(c.primary_key))
+                ),
             )
             for c in table_data.columns
         }
+        for pk in PRIMARY_KEYS:
+            if pk in details:
+                details[pk][1].primary_key = True
+        print("#########")
+        print(table_name)
+        for k, v in details.items():
+
+            print(k, v[0])
+        return details
 
     def get_all_table_names(self, schema):
         return [t for t in inspect(self.engine).get_table_names(schema)]
 
-    def map_existing_table(self, table_name: str, schema: str, view: bool = False):
+    def map_existing_table(self, table_name: str, schema: str):
         if not (self.table_exists(table_name, schema) and self.schema_exists(schema)):
             print(f"Schema: {schema} does not exist.")
             raise ValueError
@@ -127,7 +147,6 @@ class DatabaseManager:
             del dropped_table
             SQLModel.metadata.tables[f"{schema}.{table_name}"].drop(self.engine)
             SQLModel.metadata.remove(SQLModel.metadata.tables[f"{schema}.{table_name}"])
-            
 
         except AttributeError as e:
             print("Something didn't work while dropping table")

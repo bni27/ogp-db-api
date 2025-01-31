@@ -3,12 +3,8 @@ import logging
 from fastapi import APIRouter, Depends, status
 
 from app.auth import User, validate_api_key
-from app.db import (
-    union_prod,
-)
+from app.operations import union_all_tables_in_schema
 from app.pg import select_data
-from app.sql import prod_table
-from app.table import DB_MGMT
 from app.routers.data import (
     asset_class,
     filesys,
@@ -17,6 +13,9 @@ from app.routers.data import (
     reference,
     stage_table,
 )
+
+from app.sql import prod_table
+from app.table import DB_MGMT
 
 
 router = APIRouter()
