@@ -1,17 +1,10 @@
 import logging
-from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, HTTPException, status, UploadFile
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.auth import AuthLevel, User, validate_api_key
-from app.filesys import (
-    get_data_files,
-)
+from app.auth import User, validate_api_key
 from app.operations import stage_data
-from app.pg import Record, row_count, select_data
-from app.pg import DateFormatError, DuplicateHeaderError, PrimaryKeysMissingError
-from app.sql import prod_table, stage_schema
+from app.sql import stage_schema
 from app.table import DB_MGMT
 
 
@@ -46,11 +39,12 @@ def delete_stage(
 @router.get("/assetClasses/{asset_class}/stage/data")
 def get_stage_data(
     asset_class: str,
+    db: DB_MGMT,
     verified: bool = True,
     authenticated_user: User = Depends(validate_api_key),
 ):
     authenticated_user.check_privilege()
-    return select_data(asset_class, schema=stage_schema(verified))
+    return db.select_from_table(asset_class, schema=stage_schema(verified))
 
 
 @router.get("/{table_name}/record")
