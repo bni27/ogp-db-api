@@ -2,7 +2,6 @@ from csv import DictReader, DictWriter
 from datetime import date, datetime
 import logging
 from pathlib import Path
-from tqdm import tqdm
 from typing import Any, Optional
 
 import requests
@@ -10,7 +9,6 @@ from sqlmodel import (
     and_,
     case,
     cast,
-    delete,
     Field,
     select,
     Integer,
@@ -18,9 +16,7 @@ from sqlmodel import (
     Float,
     text,
     null,
-    true,
     union,
-    union_all,
     extract,
     func,
     Date,
@@ -97,11 +93,7 @@ def column_details(
 
 def load_gdp_deflators(db: DatabaseManager):
     if db.table_exists("gdp_deflators", "reference"):
-        if db.tables.get("reference", {}).get("gdp_deflators") is None:
-            db.map_existing_table("gdp_deflators", "reference")
-        with db.get_session() as session:
-            session.exec(delete(db.tables["reference"]["gdp_deflators"]))
-            session.commit()
+        db.truncate_table("gdp_deflators", "reference")
     else:
         col_desc = column_details(
             ["country_iso3", "year", "gdp_deflator"], ["country_iso3", "year"]
@@ -136,11 +128,7 @@ def load_gdp_deflators(db: DatabaseManager):
 
 def load_exchange_rate(db: DatabaseManager):
     if db.table_exists("exchange_rates", "reference"):
-        if db.tables.get("reference", {}).get("exchange_rates") is None:
-            db.map_existing_table("exchange_rates", "reference")
-        with db.get_session() as session:
-            session.exec(delete(db.tables["reference"]["exchange_rates"]))
-            session.commit()
+        db.truncate_table("exchange_rates", "reference")
     else:
         col_desc = column_details(
             ["country_iso3", "year", "exchange_rate"], ["country_iso3", "year"]
@@ -164,11 +152,7 @@ def load_exchange_rate(db: DatabaseManager):
 
 def load_ppp_rate(db: DatabaseManager):
     if db.table_exists("ppp", "reference"):
-        if db.tables.get("reference", {}).get("ppp") is None:
-            db.map_existing_table("ppp", "reference")
-        with db.get_session() as session:
-            session.exec(delete(db.tables["reference"]["ppp"]))
-            session.commit()
+        db.truncate_table("ppp", "reference")
     else:
         col_desc = column_details(
             ["country_iso3", "year", "ppp_rate"], ["country_iso3", "year"]
@@ -506,22 +490,6 @@ def schedule_ratio(table):
         *[col for col in table.selected_columns if col.name not in new_columns],
         *new_columns,
     )
-
-
-# def latest_gdp_cost(table):
-#     new_columns = []
-#     for c in table.selected_columns:
-#         if c.name.endswith("_local_cost_millions"):
-#             year_col = c.name.removesuffix("_local_cost_millions") + "_local_cost_year"
-#             currency_col = (
-#                 c.name.removesuffix("_local_cost_millions") + "_local_cost_currency"
-#             )
-#             gdp_col = f"gdp_deflator"
-#             new_columns.append(
-#                 (c / cast(gdp_col, Float)).label(
-#                     c.name.removesuffix("_local_millions") + "_usd_millions"
-#                 )
-#             )
 
 
 def stage_data(asset_class: str, db: DatabaseManager, verified: bool = True):

@@ -12,7 +12,7 @@ from app.routers import auth, data
 
 app = FastAPI(
     title="Oxford Global Projects MegaProjects Data",
-    version="0.2.0",
+    version="0.3.0",
     contact={
         "name": "Ian Bakst",
         "email": "ian.bakst@oxfordglobalprojects.com",
