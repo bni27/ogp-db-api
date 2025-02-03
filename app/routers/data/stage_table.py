@@ -3,8 +3,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.auth import User, validate_api_key
-from app.operations import stage_data
-from app.sql import stage_schema
+from app.operations import stage_data, stage_schema
 from app.db import DB_MGMT
 
 
