@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, status
 
 from app.auth import User, validate_api_key
 from app.operations import load_exchange_rate, load_ppp_rate, load_gdp_deflators
-from app.table import DB_MGMT
+from app.db import DB_MGMT
 
 
 router = APIRouter()

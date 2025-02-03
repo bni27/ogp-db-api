@@ -22,7 +22,7 @@ from app.filesys import (
 from app.pg import Record, row_count, select_data
 from app.pg import DateFormatError, DuplicateHeaderError, PrimaryKeysMissingError
 from app.sql import prod_table, stage_schema
-from app.table import DB_MGMT
+from app.db import DB_MGMT
 
 
 router = APIRouter()

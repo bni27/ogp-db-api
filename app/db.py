@@ -10,7 +10,16 @@ from sqlalchemy import inspect, MetaData, Table, Engine
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext import compiler
 from sqlalchemy.schema import DDLElement
-from sqlmodel import Column, create_engine, delete, Field, select, Session, SQLModel, String
+from sqlmodel import (
+    Column,
+    create_engine,
+    delete,
+    Field,
+    select,
+    Session,
+    SQLModel,
+    String,
+)
 
 
 PRIMARY_KEYS = ["project_id", "sample"]
@@ -69,13 +78,11 @@ class DatabaseManager:
     engine: Engine
 
     def __init__(self):
-        """Initialize the DatabaseManager.
-        """
+        """Initialize the DatabaseManager."""
         self.tables = {}
         self.engine = create_engine(
             "postgresql+pg8000://",
             creator=getconn,
-            # echo=True,
         )
 
     @contextmanager
@@ -113,6 +120,22 @@ class DatabaseManager:
         """
         return inspect(self.engine).has_schema(schema)
 
+    def get_columns(self, table_name: str, schema: str):
+        """
+        Get column names for a table in the given schema.
+
+        Args:
+            table_name (str): The name of the table.
+            schema (str): The schema name.
+
+        Returns:
+            list: A list of column names.
+        """
+        metadata = MetaData(schema)
+        metadata.reflect(self.engine)
+        table_data = Table(table_name, metadata)
+        return table_data.columns
+
     def get_column_descriptions(self, table_name, schema):
         """
         Get column descriptions for a table in the given schema.
@@ -124,9 +147,6 @@ class DatabaseManager:
         Returns:
             Dict[str, Optional[type]]: A dictionary of column descriptions.
         """
-        metadata = MetaData(schema)
-        metadata.reflect(self.engine)
-        table_data = Table(table_name, metadata)
         details = {
             c.name: (
                 Optional[c.type.python_type] if c.nullable else c.type.python_type,
@@ -139,7 +159,7 @@ class DatabaseManager:
                     else Field(default=c.default, primary_key=(c.primary_key))
                 ),
             )
-            for c in table_data.columns
+            for c in self.get_columns(table_name, schema)
         }
         for pk in PRIMARY_KEYS:
             if pk in details:
@@ -256,7 +276,7 @@ class DatabaseManager:
         except AttributeError as e:
             print("Something didn't work while dropping table")
             raise
-    
+
     def truncate_table(self, table_name: str, schema: str):
         """
         Truncates a table in the database if it exists.

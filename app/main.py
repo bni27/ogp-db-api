@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from psycopg2 import OperationalError
 
 from app.auth import validate_api_key
-from app.table import DB_MGMT
+from app.db import DB_MGMT
 from app.routers import auth, data
 
 

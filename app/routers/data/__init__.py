@@ -3,17 +3,17 @@ import logging
 from fastapi import APIRouter, Depends, status
 
 from app.auth import AuthLevel, User, validate_api_key
-from app.operations import update_prod
+from app.operations import prod_table, update_prod
 from app.routers.data import (
     asset_class,
     filesys,
     raw_table,
+    rcf,
     reference,
     stage_table,
 )
 
-from app.sql import prod_table
-from app.table import DB_MGMT
+from app.db import DB_MGMT
 
 
 router = APIRouter()
@@ -32,6 +32,11 @@ router.include_router(
 router.include_router(
     raw_table.router,
     prefix="/rawTable",
+    dependencies=[Depends(validate_api_key)],
+)
+router.include_router(
+    rcf.router,
+    prefix="/rcf",
     dependencies=[Depends(validate_api_key)],
 )
 router.include_router(

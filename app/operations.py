@@ -26,10 +26,10 @@ from sqlmodel import (
 )
 import wbgapi as wb
 
+from app.db import CreateTableAs, DatabaseManager
 from app.exception import DateFormatError, DuplicateHeaderError, PrimaryKeysMissingError
 from app.filesys import get_data_files
-from app.sql import prod_table, raw_schema, stage_schema
-from app.table import CreateTableAs, DatabaseManager
+
 
 EXCHANGE_RATE_TABLE = "PA.NUS.FCRF"
 PPP_RATE_TABLE = "PA.NUS.PPP"
@@ -53,6 +53,22 @@ COLUMN_TYPE_NOTATION = {
 STANDARD_DAY = "-07-02"
 DATE_FORMAT = "%Y-%m-%d"
 PRIMARY_KEYS = {"project_id", "sample"}
+
+def _verified_name(verified: bool = False) -> str:
+    return "verified" if verified else "unverified"
+
+
+def raw_schema(verified: bool = False) -> str:
+    return f"raw_{_verified_name(verified)}"
+
+
+def stage_schema(verified: bool = False) -> str:
+    return f"stage_{_verified_name(verified)}"
+
+
+def prod_table(verified: bool = False) -> str:
+    return f"{_verified_name(verified)}_projects"
+
 
 _logger = logging.getLogger(__name__)
 
@@ -173,82 +189,6 @@ def load_ppp_rate(db: DatabaseManager):
             ],
         )
         session.commit()
-
-
-def load_raw_data(file_path: Path, db: DatabaseManager, verified: bool = True):
-    table_name = file_path.stem
-    schema = raw_schema(verified)
-    if db.table_exists(table_name, schema):
-        if db.tables.get(schema, {}).get(table_name) is None:
-            _logger.info(f"Adding existing table: {schema}.{table_name} to DB manager.")
-            db.map_existing_table(table_name, schema)
-        db.drop_table(table_name, schema)
-    with open(file_path, "r", encoding="utf-8-sig", newline="") as f:
-        data = DictReader(f)
-        first_row = next(data)
-        headers = [k for k in first_row.keys()]
-        col_desc = column_details(headers)
-        db.create_new_table(table_name, schema, col_desc)
-        with db.get_session() as session:
-            session.add(
-                db.tables[schema][table_name](
-                    **{k: type_cast(k, v) for k, v in first_row.items() if v != ""}
-                )
-            )
-            for row in data:
-                session.add(
-                    db.tables[schema][table_name](
-                        **{k: type_cast(k, v) for k, v in row.items() if v != ""}
-                    )
-                )
-            session.commit()
-    return f"{schema}.{table_name}"
-
-
-def drop_raw_table(table_name: str, verified: bool, db: DatabaseManager):
-    db.drop_table(table_name, raw_schema(verified))
-
-
-def delete_record_from_file(file_path: Path, project_id: str, sample: str):
-    with open(file_path, "r", encoding="utf-8-sig", newline="") as f:
-        data = [r for r in DictReader(f)]
-    fieldnames = data[0].keys()
-    if (
-        len(
-            [r for r in data if r["project_id"] == project_id and r["sample"] == sample]
-        )
-        == 0
-    ):
-        raise ValueError("Record does not exist.")
-    with open(file_path, "w", encoding="utf-8-sig", newline="") as f:
-        w = DictWriter(f, fieldnames=fieldnames)
-        w.writeheader()
-        for r in data:
-            if r["project_id"] == project_id and r["sample"] == sample:
-                continue
-            w.writerow(r)
-
-
-def update_record_in_file(
-    file_path: Path, project_id: str, sample: str, data: dict[str, Any]
-):
-    with open(file_path, "r", encoding="utf-8-sig", newline="") as f:
-        rows = [r for r in DictReader(f)]
-    fieldnames = rows[0].keys()
-    if (
-        len(
-            [r for r in rows if r["project_id"] == project_id and r["sample"] == sample]
-        )
-        == 0
-    ):
-        raise ValueError("Record does not exist.")
-    with open(file_path, "w", encoding="utf-8-sig", newline="") as f:
-        w = DictWriter(f, fieldnames=fieldnames)
-        w.writeheader()
-        for r in rows:
-            if r["project_id"] == project_id and r["sample"] == sample:
-                r.update(data)
-            w.writerow(r)
 
 
 def add_record_in_file(

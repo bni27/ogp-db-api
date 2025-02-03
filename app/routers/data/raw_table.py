@@ -4,10 +4,15 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.auth import User, validate_api_key
 from app.exception import DateFormatError, DuplicateHeaderError, PrimaryKeysMissingError
-from app.filesys import build_raw_file_path, find_file
-from app.operations import add_record_in_file, load_raw_data, drop_raw_table, delete_record_from_file, update_record_in_file
-from app.sql import raw_schema
-from app.table import DB_MGMT, Record
+from app.filesys import (
+    build_raw_file_path,
+    delete_record_from_file,
+    find_file,
+    load_raw_data,
+    update_record_in_file,
+)
+from app.operations import add_record_in_file, raw_schema
+from app.db import DB_MGMT, Record
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -85,8 +90,7 @@ def get_raw_table(
     verified: bool = True,
     authenticated_user: User = Depends(validate_api_key),
 ):
-    """Return raw data from table.
-    """
+    """Return raw data from table."""
     authenticated_user.check_privilege()
     return db.select_from_table(table_name, raw_schema(verified))
 
@@ -100,7 +104,7 @@ def delete_raw(
 ):
     """Delete Raw Table"""
     authenticated_user.check_privilege()
-    drop_raw_table(table_name, verified, db)
+    db.drop_table(table_name, raw_schema(verified))
     return status.HTTP_204_NO_CONTENT
 
 
@@ -119,7 +123,7 @@ def get_raw_record(
     except StopIteration:
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Project with project_id: {project_id}, and sample: {sample} could not be found in table: {raw_schema(verified)}.{table_name}"
+            detail=f"Project with project_id: {project_id}, and sample: {sample} could not be found in table: {raw_schema(verified)}.{table_name}",
         )
 
 
@@ -138,9 +142,9 @@ def delete_raw_record(
     except StopIteration:
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Project with project_id: {project_id}, and sample: {sample} could not be found in table: {raw_schema(verified)}.{table_name}"
+            detail=f"Project with project_id: {project_id}, and sample: {sample} could not be found in table: {raw_schema(verified)}.{table_name}",
         )
-    
+
     with db.get_session() as session:
         try:
             session.delete(record)
@@ -163,22 +167,28 @@ def update_raw_record(
 ):
     authenticated_user.check_privilege()
     try:
-        row = db.select_by_id(table_name, raw_schema(verified), record.project_id, record.sample)
+        row = db.select_by_id(
+            table_name, raw_schema(verified), record.project_id, record.sample
+        )
     except StopIteration:
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Project with project_id: {record.project_id}, and sample: {record.sample} could not be found in table: {raw_schema(verified)}.{table_name}"
+            detail=f"Project with project_id: {record.project_id}, and sample: {record.sample} could not be found in table: {raw_schema(verified)}.{table_name}",
         )
     with db.get_session() as session:
         try:
             row.sqlmodel_update(record.data)
             session.add(row)
             file_path = find_file(table_name, verified)
-            update_record_in_file(file_path, record.project_id, record.sample, record.data)
+            update_record_in_file(
+                file_path, record.project_id, record.sample, record.data
+            )
             session.commit()
             session.refresh(row)
         except Exception as e:
-            logger.error(f"Unable to update record in {raw_schema(verified)}.{table_name}")
+            logger.error(
+                f"Unable to update record in {raw_schema(verified)}.{table_name}"
+            )
             logger.exception(e)
             session.rollback()
     return status.HTTP_204_NO_CONTENT
@@ -194,27 +204,34 @@ def add_raw_record(
 ):
     authenticated_user.check_privilege()
     try:
-        row = db.select_by_id(table_name, raw_schema(verified), record.project_id, record.sample)
+        row = db.select_by_id(
+            table_name, raw_schema(verified), record.project_id, record.sample
+        )
         return HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"Project with project_id: {record.project_id}, and sample: {record.sample} already exists in: {raw_schema(verified)}.{table_name}"
+            detail=f"Project with project_id: {record.project_id}, and sample: {record.sample} already exists in: {raw_schema(verified)}.{table_name}",
         )
     except StopIteration:
         pass
     with db.get_session() as session:
         try:
-            row = db.tables[raw_schema(verified)][table_name](**{**record.data, "project_id": record.project_id, "sample":record.sample})
+            row = db.tables[raw_schema(verified)][table_name](
+                **{
+                    **record.data,
+                    "project_id": record.project_id,
+                    "sample": record.sample,
+                }
+            )
             session.add(row)
             file_path = find_file(table_name, verified)
             add_record_in_file(file_path, record.project_id, record.sample, record.data)
             session.commit()
             session.refresh(row)
         except Exception as e:
-            logger.error(f"Unable to update record in {raw_schema(verified)}.{table_name}")
+            logger.error(
+                f"Unable to update record in {raw_schema(verified)}.{table_name}"
+            )
             logger.exception(e)
             session.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=str(e)
-            )
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     return status.HTTP_204_NO_CONTENT
