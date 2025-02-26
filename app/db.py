@@ -21,6 +21,8 @@ from sqlmodel import (
     String,
 )
 
+from app.column import column_details
+
 
 PRIMARY_KEYS = ["project_id", "sample"]
 _logger = logging.getLogger(__name__)
@@ -197,13 +199,13 @@ class DatabaseManager:
         if not self.schema_exists(schema):
             _logger.error(f"Schema {schema} does not exist")
             raise ValueError
+        if schema not in self.tables:
+            self.tables[schema] = {}
+        if table_name in self.tables.get(schema, {}):
+            return self.tables[schema][table_name]
         if not self.table_exists(table_name, schema):
             _logger.error(f"Table {table_name} does not exist in schema {schema}")
             raise ValueError
-        if table_name in self.tables.get(schema, {}):
-            return
-        if schema not in self.tables:
-            self.tables[schema] = {}
         self.tables[schema][table_name] = create_model(
             f"{schema}{table_name}",
             __tablename__=table_name,
@@ -212,6 +214,7 @@ class DatabaseManager:
             __table_args__={"schema": schema, "extend_existing": True},
             **self.get_column_descriptions(table_name, schema),
         )
+        return self.tables[schema][table_name]
 
     def create_new_table(self, table_name: str, schema: str, definitions: dict):
         """
@@ -244,6 +247,7 @@ class DatabaseManager:
             **definitions,
         )
         SQLModel.metadata.tables[f"{schema}.{table_name}"].create(self.engine)
+        return self.tables[schema][table_name]
 
     def drop_table(self, table_name: str, schema: str):
         """
@@ -342,6 +346,31 @@ class DatabaseManager:
             )
             data = session.exec(stmt)
             return next(data)
+
+    def load_data_into_table(
+        self,
+        table_name: str,
+        schema: str,
+        records: list[dict[str, Any]],
+    ):
+        """
+        Load data into a table in the database.
+
+        Args:
+            table_name (str): The name of the table to load data into.
+            schema (str): The schema of the table.
+            records (list[dict[str, Any]]): The records to load into the table,
+                    records are in dict format, with headers as keys.
+        Returns:
+            None
+        """
+        _tbl = self.map_existing_table(table_name, schema)
+        with self.get_session() as session:
+            session.bulk_insert_mappings(
+                _tbl,
+                records,
+            )
+            session.commit()
 
 
 database_manager = DatabaseManager()

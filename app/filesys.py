@@ -4,8 +4,7 @@ from os import environ
 from pathlib import Path
 from typing import Any, Generator
 
-from app.db import DatabaseManager
-from app.operations import column_details, raw_schema, type_cast
+from app.column import type_cast
 
 BUCKET_MOUNT = Path(environ.get("BUCKET_MOUNT", "/data"))
 _logger = logging.getLogger(__name__)
@@ -64,34 +63,15 @@ def find_file(table_name: str, verified: bool = False) -> Path:
                 return build_raw_file_path(f, d, verified)
 
 
-def load_raw_data(file_path: Path, db: DatabaseManager, verified: bool = True):
-    table_name = file_path.stem
-    schema = raw_schema(verified)
-    if db.table_exists(table_name, schema):
-        if db.tables.get(schema, {}).get(table_name) is None:
-            _logger.info(f"Adding existing table: {schema}.{table_name} to DB manager.")
-            db.map_existing_table(table_name, schema)
-        db.drop_table(table_name, schema)
+def read_raw_data_file(file_path: Path) -> tuple[list[str], list[dict[str, Any]]]:
     with open(file_path, "r", encoding="utf-8-sig", newline="") as f:
         data = DictReader(f)
         first_row = next(data)
         headers = [k for k in first_row.keys()]
-        col_desc = column_details(headers)
-        db.create_new_table(table_name, schema, col_desc)
-        with db.get_session() as session:
-            session.add(
-                db.tables[schema][table_name](
-                    **{k: type_cast(k, v) for k, v in first_row.items() if v != ""}
-                )
-            )
-            for row in data:
-                session.add(
-                    db.tables[schema][table_name](
-                        **{k: type_cast(k, v) for k, v in row.items() if v != ""}
-                    )
-                )
-            session.commit()
-    return f"{schema}.{table_name}"
+        records = [
+            {k: type_cast(k, v) for k, v in row.items() if v != ""} for row in data
+        ]
+    return headers, records
 
 
 def delete_record_from_file(file_path: Path, project_id: str, sample: str):
@@ -134,3 +114,21 @@ def update_record_in_file(
             if r["project_id"] == project_id and r["sample"] == sample:
                 r.update(data)
             w.writerow(r)
+
+
+def add_record_to_file(
+    file_path: Path, project_id: str, sample: str, data: dict[str, Any]
+):
+    with open(file_path, "r", encoding="utf-8-sig", newline="") as f:
+        rows = [r for r in DictReader(f)]
+    fieldnames = rows[0].keys()
+    if (
+        len(
+            [r for r in rows if r["project_id"] == project_id and r["sample"] == sample]
+        )
+        > 0
+    ):
+        raise ValueError("Record already exists.")
+    with open(file_path, "a", encoding="utf-8-sig", newline="") as f:
+        w = DictWriter(f, fieldnames=fieldnames)
+        w.writerow({**data, "project_id": project_id, "sample": sample})
