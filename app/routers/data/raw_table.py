@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.auth import User, validate_api_key
 from app.exception import DateFormatError, DuplicateHeaderError, PrimaryKeysMissingError
 from app.filesys import (
+    add_record_to_file,
     build_raw_file_path,
     delete_record_from_file,
     find_file,
@@ -13,7 +14,7 @@ from app.filesys import (
 )
 from app.column import column_details
 from app.db import DB_MGMT, Record
-from app.operations import add_record_in_file, raw_schema
+from app.schema import raw_schema
 
 
 router = APIRouter()
@@ -232,7 +233,7 @@ def add_raw_record(
             )
             session.add(row)
             file_path = find_file(table_name, verified)
-            add_record_in_file(file_path, record.project_id, record.sample, record.data)
+            add_record_to_file(file_path, record.project_id, record.sample, record.data)
             session.commit()
             session.refresh(row)
         except Exception as e:
