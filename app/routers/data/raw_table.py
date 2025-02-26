@@ -56,12 +56,12 @@ def load_raw(
     logger.info(f"Loading raw file: {file_path} into database.")
     try:
         headers, data = read_raw_data_file(file_path)
-        table = db.create_new_table(
+        db.create_new_table(
             file_path.stem,
             raw_schema(verified),
             column_details(headers)
         )
-        db.load_data_into_table(table, raw_schema(verified), data)
+        db.load_data_into_table(file_path.stem, raw_schema(verified), data)
     except FileNotFoundError:
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -88,7 +88,7 @@ def load_raw(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)
         )
     return {
-        "table_name": table,
+        "table_name": file_path.stem,
     }
 
 
