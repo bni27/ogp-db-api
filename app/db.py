@@ -138,7 +138,7 @@ class DatabaseManager:
         table_data = Table(table_name, metadata)
         return table_data.columns
 
-    def get_column_descriptions(self, table_name, schema):
+    def get_column_descriptions(self, table_name, schema, primary_keys: list[str] = PRIMARY_KEYS):
         """
         Get column descriptions for a table in the given schema.
 
@@ -163,7 +163,7 @@ class DatabaseManager:
             )
             for c in self.get_columns(table_name, schema)
         }
-        for pk in PRIMARY_KEYS:
+        for pk in primary_keys:
             if pk in details:
                 details[pk][1].primary_key = True
         return details

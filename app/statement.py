@@ -2,13 +2,11 @@ from sqlmodel import (
     and_,
     case,
     cast,
-    Field,
     select,
     Integer,
     Table,
     Float,
     SQLModel,
-    text,
     null,
     union,
     extract,
@@ -132,6 +130,15 @@ def add_schedule_columns(table):
 
 
 def union_tables(*tables: SQLModel):
+    """
+    Union multiple tables, ensuring all columns are included.
+
+    Args:
+        tables (SQLModel): The tables to union.
+
+    Returns:
+        select: The unioned select statement.
+    """
     all_columns = set()
     selected_tables = [select(table) for table in tables]
     all_columns.update(c.name for t in selected_tables for c in t.columns)
@@ -151,11 +158,30 @@ def union_tables(*tables: SQLModel):
 
 
 def union_all_tables_in_schema(schema: str, db: DatabaseManager):
+    """
+    Union all tables in the given schema.
+
+    Args:
+        schema (str): The schema name.
+        db (DatabaseManager): The database manager instance.
+
+    Returns:
+        select: The unioned select statement.
+    """
     tables = db.get_all_table_names(schema)
     return union_tables(*[db.tables[schema][table] for table in tables])
 
 
 def schedule_ratio(table):
+    """
+    Calculate the schedule ratio for the given table.
+
+    Args:
+        table: The table to calculate the schedule ratio for.
+
+    Returns:
+        select: The select statement with the schedule ratio.
+    """
     new_columns = []
     for c in table.selected_columns:
         if (

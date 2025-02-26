@@ -8,11 +8,13 @@ from app.filesys import (
     build_raw_file_path,
     delete_record_from_file,
     find_file,
-    load_raw_data,
+    read_raw_data_file,
     update_record_in_file,
 )
-from app.operations import add_record_in_file, raw_schema
+from app.column import column_details
 from app.db import DB_MGMT, Record
+from app.operations import add_record_in_file, raw_schema
+
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -52,7 +54,13 @@ def load_raw(
         )
     logger.info(f"Loading raw file: {file_path} into database.")
     try:
-        table = load_raw_data(file_path, db)
+        headers, data = read_raw_data_file(file_path)
+        table = db.create_new_table(
+            file_name,
+            raw_schema(verified),
+            column_details(headers)
+        )
+        db.load_data_into_table(table, raw_schema(verified), data)
     except FileNotFoundError:
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

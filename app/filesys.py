@@ -11,6 +11,9 @@ _logger = logging.getLogger(__name__)
 
 
 def build_verified_path(verified: bool = False) -> Path:
+    """
+    Build the path to the verified or unverified data folder.
+    """
     verification_folder = Path("verified") if verified else Path("unverified")
     return BUCKET_MOUNT / verification_folder
 
@@ -21,6 +24,9 @@ def build_asset_path(
     create: bool = False,
     raise_if_absent: bool = True,
 ) -> Path:
+    """
+    Build the path to the asset class folder.
+    """
     asset_class_path = build_verified_path(verified) / Path(asset_class)
     if create:
         asset_class_path.mkdir()
@@ -34,6 +40,9 @@ def build_raw_file_path(
     asset_class: str,
     verified: bool = False,
 ) -> Path:
+    """
+    Build the path to the raw data file.
+    """
     return build_asset_path(asset_class, verified) / Path(file_name)
 
 
@@ -41,18 +50,27 @@ def _get_files(
     asset_class: str,
     verified: bool = False,
 ) -> Generator[Path, None, None]:
+    """
+    Get all files in the given asset class folder.
+    """
     return (f for f in build_asset_path(asset_class, verified).iterdir() if f.is_file())
 
 
 def get_data_files(
     asset_class: str, verified: bool = False, extension: str = ".csv"
 ) -> Generator[Path, None, None]:
+    """
+    Get all data files with a given extension (default '.csv') in the given asset class folder.
+    """
     return (f for f in _get_files(asset_class, verified) if f.name.endswith(extension))
 
 
 def get_directories(
     verified: bool = False,
 ) -> Generator[Path, None, None]:
+    """
+    Get all directories in the given verified/unverified folder.
+    """
     return (d for d in build_verified_path(verified).iterdir() if d.is_dir())
 
 
