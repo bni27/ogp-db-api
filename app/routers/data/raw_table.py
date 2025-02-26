@@ -57,7 +57,7 @@ def load_raw(
     try:
         headers, data = read_raw_data_file(file_path)
         table = db.create_new_table(
-            file_name,
+            file_path.stem,
             raw_schema(verified),
             column_details(headers)
         )

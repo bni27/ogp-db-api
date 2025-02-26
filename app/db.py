@@ -21,8 +21,6 @@ from sqlmodel import (
     String,
 )
 
-from app.column import column_details
-
 
 PRIMARY_KEYS = ["project_id", "sample"]
 _logger = logging.getLogger(__name__)
